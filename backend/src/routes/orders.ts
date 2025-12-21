@@ -2,7 +2,7 @@ import { Router } from "express";
 import authMiddleware from "../middleware/auth";
 import {
   createOrderController,
-  getOrdersController,
+  getAllOrdersController,
   getOrderByIdController,
   updateOrderController
 } from "../controllers/orderController";
@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.post("/", authMiddleware, createOrderController);
-router.get("/", authMiddleware, getOrdersController);
+router.get("/", authMiddleware, getAllOrdersController);
 router.get("/:id", authMiddleware, getOrderByIdController);
 router.put("/:id", authMiddleware, updateOrderController);
 
