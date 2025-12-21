@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createOrder, getAllOrders } from "../services/orderService";
+import { createOrder, getAllOrders, getOrderById, updateOrder } from "../services/orderService";
 import { Database } from "../types/supabase";
 type OrderWithCustomer = Database['public']['Tables']['orders']['Row'] & {
   customer_name?: string;
@@ -37,5 +37,52 @@ export const getAllOrdersController = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Get Orders Error:", err.message);
     res.status(500).json({ error: "Failed to fetch orders." });
+  }
+};
+
+export const getOrderByIdController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    const order = await getOrderById(parseInt(id));
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json(order);
+  } catch (err: any) {
+    console.error("Get Order By ID Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch order." });
+  }
+};
+
+export const updateOrderController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    const updatedOrder = await updateOrder(parseInt(id), req.body);
+
+    if (!updatedOrder) {
+      // If null is returned it likely means no fields were updated or id not found
+      // Check if ID exists first? For now assuming if result is null and we had fields, it might be not found.
+      // But updateOrder returns null if no fields to update.
+      // Let's check if there were fields in body.
+      if (Object.keys(req.body).length === 0) {
+        return res.status(400).json({ error: "No fields to update provided." });
+      }
+      return res.status(404).json({ error: "Order not found or no changes made." });
+    }
+
+    res.status(200).json(updatedOrder);
+  } catch (err: any) {
+    console.error("Update Order Error:", err.message);
+    res.status(500).json({ error: "Failed to update order." });
   }
 };
