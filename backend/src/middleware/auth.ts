@@ -3,14 +3,12 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-// Shared JWT Payload Interface
 export interface JwtPayload {
   userId: number;
   email: string;
   role: string;
 }
 
-// Auth Middleware
 const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
