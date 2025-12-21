@@ -1,6 +1,4 @@
 import pool from "../config/db";
-// Import the generated types (assuming you ran the gen types command)
-// import { Database } from "../types/supabase";
 
 // Update your interface to match the new database schema
 export interface CreateOrderInput {

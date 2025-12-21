@@ -7,7 +7,6 @@ import {
   UpdateOrderInput
 } from "../services/orderService";
 import { Database } from "../types/supabase";
-
 type OrderWithCustomer = Database['public']['Tables']['orders']['Row'] & {
   customer_name?: string;
   concrete_grade?: string;
