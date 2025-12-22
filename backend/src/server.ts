@@ -4,7 +4,7 @@ import cors from 'cors';
 import pool from './config/db';
 import orderRoutes from './routes/orders';
 import authRoutes from './routes/auth';
-import authMiddleware from './middleware/auth';
+import { authenticate } from './middleware/auth';
 
 const app = express();
 app.use(cors());
@@ -15,7 +15,7 @@ app.use('/api/auth', authRoutes);
 
 // Protected route example
 // We extend Request type for `user` in a declaration file (see instructions below).
-app.get('/api/protected', authMiddleware, (req: Request, res: Response) => {
+app.get('/api/protected', authenticate, (req: Request, res: Response) => {
   // req.user will be available if middleware sets it
   // use (req as any).user if you haven't added the declaration merging file yet
   res.json({ message: 'This is protected data!', user: (req as any).user });
