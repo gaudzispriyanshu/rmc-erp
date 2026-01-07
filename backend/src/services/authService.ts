@@ -49,23 +49,18 @@ export const registerUser = async (
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // 2. Insert into users with role_id
-  // Note: We keep writing to 'role' (string) column if it exists for legacy compatibility?
-  // The user didn't say to remove it. But the PRIMARY goal is RBAC.
-  // I will check if 'role' column is still in use.
-  // Based on the 'read_file' of authService.ts earlier, it was using it.
-  // I'll try to write to both to be safe, assuming the column exists.
-  // But wait, if I don't know for sure, I should check schema.
-  // The migration '20251221085716_add_rbac_tables.sql' only added role_id.
-  // So 'role' column likely still exists.
+  // We stop writing to the legacy 'role' column to enforce RBAC usage.
+  // The 'role' column will be deprecated.
 
   const result = await pool.query(
-    `INSERT INTO users (email, password, name, role, role_id)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING id, email, name, role, role_id`,
-    [email, hashedPassword, name, roleName, roleId]
+    `INSERT INTO users (email, password, name, role_id)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, email, name, role_id`,
+    [email, hashedPassword, name, roleId]
   );
 
-  const user = result.rows[0];
+  // Attach role name for frontend compatibility
+  const user = { ...result.rows[0], role: roleName };
 
   const token = jwt.sign(
     { userId: user.id, email: user.email, roleId: user.role_id } as JwtPayload,
@@ -77,8 +72,12 @@ export const registerUser = async (
 };
 
 export const loginUser = async (email: string, password: string) => {
+  // Use LEFT JOIN to get role name from roles table
   const result = await pool.query(
-    "SELECT * FROM users WHERE email = $1",
+    `SELECT u.*, r.name as role_name
+     FROM users u
+     LEFT JOIN roles r ON u.role_id = r.id
+     WHERE u.email = $1`,
     [email]
   );
 
@@ -96,11 +95,14 @@ export const loginUser = async (email: string, password: string) => {
   // Ensure role_id is present. If user was created before RBAC, it might be null.
   // We might need to backfill or handle nulls.
   if (!user.role_id) {
-      // Try to recover role_id from role name string
+      // Try to recover role_id from role name string (legacy fallback)
       if (user.role) {
-          const roleRes = await pool.query("SELECT id FROM roles WHERE name = $1", [user.role]);
+          const roleRes = await pool.query("SELECT id, name FROM roles WHERE name = $1", [user.role]);
           if (roleRes.rows.length > 0) {
               user.role_id = roleRes.rows[0].id;
+              // We also found the role name from roles table, so let's use it
+              user.role_name = roleRes.rows[0].name;
+
               // Optionally update the user record
               await pool.query("UPDATE users SET role_id = $1 WHERE id = $2", [user.role_id, user.id]);
           } else {
@@ -123,15 +125,20 @@ export const loginUser = async (email: string, password: string) => {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      // Prefer role_name from joined table, fallback to legacy 'role' column if needed
+      role: user.role_name || user.role,
       roleId: user.role_id
     },
   };
 };
 
 export const verifyUser = async (userId: number) => {
+  // Select legacy role column as fallback
   const result = await pool.query(
-    "SELECT id, email, name, role, role_id FROM users WHERE id = $1",
+    `SELECT u.id, u.email, u.name, u.role_id, u.role as legacy_role, r.name as role_name
+     FROM users u
+     LEFT JOIN roles r ON u.role_id = r.id
+     WHERE u.id = $1`,
     [userId]
   );
 
@@ -139,5 +146,14 @@ export const verifyUser = async (userId: number) => {
     throw new Error("User not found");
   }
 
-  return result.rows[0];
+  const user = result.rows[0];
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role_id: user.role_id,
+    // Prefer joined role name, fallback to legacy role column
+    role: user.role_name || user.legacy_role
+  };
 };
