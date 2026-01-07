@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 export interface JwtPayload {
   userId: number;
   email: string;
-  roleId: number; // Important: Switch from 'role' string to 'roleId'
+  roleId: number;
 }
 
 // 1. Existing Authentication Middleware
