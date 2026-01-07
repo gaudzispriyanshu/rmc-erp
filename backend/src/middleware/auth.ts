@@ -20,7 +20,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    req.user = decoded as any; 
+    req.user = decoded;
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid token" });
@@ -31,7 +31,10 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 export const authorize = (requiredPermission: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { roleId } = (req.user as unknown) as JwtPayload;
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const { roleId } = req.user;
 
       // Query the junction table we created in the migration
       const result = await pool.query(

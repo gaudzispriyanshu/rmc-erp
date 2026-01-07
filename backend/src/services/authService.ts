@@ -123,7 +123,6 @@ export const loginUser = async (email: string, password: string) => {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
       roleId: user.role_id
     },
   };
