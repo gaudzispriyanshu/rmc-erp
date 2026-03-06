@@ -3,8 +3,8 @@ import { registerUser, loginUser, verifyUser } from "../services/authService";
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, name, role } = req.body;
-    const data = await registerUser(email, password, name, role);
+    const { email, password, name, role_id } = req.body;
+    const data = await registerUser(email, password, name, role_id);
     res.json({ message: "User registered successfully", ...data });
   } catch (err: any) {
     res.status(400).json({ error: err.message });

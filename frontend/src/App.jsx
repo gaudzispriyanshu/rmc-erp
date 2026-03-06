@@ -1,50 +1,87 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import Layout from './components/layout/Layout';
 import Login from './components/Login';
-import './App.css';
+import Dashboard from './pages/Dashboard';
 
-// Main app content
-const AppContent = () => {
-  const { user, logout, loading } = useAuth();
+// Placeholder page for routes not yet built
+const ComingSoon = ({ title }) => (
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '60vh',
+    color: 'var(--gray-400)',
+  }}>
+    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
+    <h2 style={{ color: 'var(--gray-700)', marginBottom: '8px' }}>{title}</h2>
+    <p>This section is under development.</p>
+  </div>
+);
+
+// Redirect to login if not authenticated
+const RequireAuth = ({ children }) => {
+  const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        fontSize: '16px',
+        color: 'var(--gray-500)',
+      }}>
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
-    return <Login />;
+    return <Navigate to="/login" replace />;
   }
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>RMC ERP System</h1>
-        <div>
-          <span>Welcome, {user.name} ({user.role})</span>
-          <button 
-            onClick={logout}
-            style={{ marginLeft: '15px', padding: '5px 10px' }}
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-      
-      <main>
-        <h2>Dashboard</h2>
-        <p>You are successfully logged in!</p>
-        {/* We'll add more components here */}
-      </main>
-    </div>
-  );
+  return children;
 };
 
-// App wrapper with AuthProvider
+// Redirect to dashboard if already logged in
+const LoginPage = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+  if (user) return <Navigate to="/" replace />;
+
+  return <Login />;
+};
+
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <Layout />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="orders" element={<ComingSoon title="Orders" />} />
+            <Route path="inventory" element={<ComingSoon title="Inventory" />} />
+            <Route path="vehicles" element={<ComingSoon title="Vehicles" />} />
+            <Route path="trips" element={<ComingSoon title="Trips" />} />
+            <Route path="administration" element={<ComingSoon title="Administration" />} />
+            <Route path="reports" element={<ComingSoon title="Reports" />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
