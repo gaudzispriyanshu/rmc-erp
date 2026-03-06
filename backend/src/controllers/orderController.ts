@@ -67,17 +67,22 @@ export const updateOrderController = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Order ID is required" });
     }
 
+    // Check if body is empty
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({ error: "No fields to update provided." });
+    }
+
+    // Check if order exists
+    const existingOrder = await getOrderById(parseInt(id));
+    if (!existingOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
     const updatedOrder = await updateOrder(parseInt(id), req.body);
 
     if (!updatedOrder) {
-      // If null is returned it likely means no fields were updated or id not found
-      // Check if ID exists first? For now assuming if result is null and we had fields, it might be not found.
-      // But updateOrder returns null if no fields to update.
-      // Let's check if there were fields in body.
-      if (Object.keys(req.body).length === 0) {
-        return res.status(400).json({ error: "No fields to update provided." });
-      }
-      return res.status(404).json({ error: "Order not found or no changes made." });
+      // Since we know the order exists, null means no valid fields were updated
+      return res.status(400).json({ error: "No valid fields to update provided." });
     }
 
     res.status(200).json(updatedOrder);
