@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/layout/Layout';
 import Login from './components/Login';
 import Dashboard from './pages/Dashboard';
+import SecurityRoles from './pages/SecurityRoles';
 
 // Placeholder page for routes not yet built
 const ComingSoon = ({ title }) => (
@@ -76,7 +77,11 @@ function App() {
             <Route path="inventory" element={<ComingSoon title="Inventory" />} />
             <Route path="vehicles" element={<ComingSoon title="Vehicles" />} />
             <Route path="trips" element={<ComingSoon title="Trips" />} />
-            <Route path="administration" element={<ComingSoon title="Administration" />} />
+            {/* Administration sub-routes */}
+            <Route path="administration" element={<Navigate to="security-roles" replace />} />
+            <Route path="administration/security-roles" element={<SecurityRoles />} />
+            <Route path="administration/users" element={<ComingSoon title="Users" />} />
+            <Route path="administration/settings" element={<ComingSoon title="System Settings" />} />
             <Route path="reports" element={<ComingSoon title="Reports" />} />
           </Route>
         </Routes>

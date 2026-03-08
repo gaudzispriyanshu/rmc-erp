@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createOrder, getAllOrders, getOrderById, updateOrder } from "../services/orderService";
+import { createOrder, getAllOrders, getOrderById, updateOrder, getRecentOrders } from "../services/orderService";
 import { Database } from "../types/supabase";
 type OrderWithCustomer = Database['public']['Tables']['orders']['Row'] & {
   customer_name?: string;
@@ -57,6 +57,17 @@ export const getOrderByIdController = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Get Order By ID Error:", err.message);
     res.status(500).json({ error: "Failed to fetch order." });
+  }
+};
+
+export const getRecentOrdersController = async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 5;
+    const orders = await getRecentOrders(limit);
+    res.status(200).json(orders);
+  } catch (err: any) {
+    console.error("Get Recent Orders Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch recent orders." });
   }
 };
 

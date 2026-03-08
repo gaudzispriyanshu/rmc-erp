@@ -3,7 +3,8 @@ import {
   createOrderController,
   getAllOrdersController,
   getOrderByIdController,
-  updateOrderController
+  updateOrderController,
+  getRecentOrdersController
 } from "../controllers/orderController";
 import { authenticate, authorize } from "../middleware/auth";
 
@@ -12,7 +13,10 @@ const router = Router();
 // 1. View all orders - requires 'orders:read' permission
 router.get("/", authenticate, authorize("orders:read"), getAllOrdersController);
 
-// 2. View a specific order - also requires 'orders:read'
+// 2. View recent orders (dashboard) - must be BEFORE /:id to avoid conflict
+router.get("/recent", authenticate, authorize("orders:read"), getRecentOrdersController);
+
+// 3. View a specific order - also requires 'orders:read'
 router.get("/:id", authenticate, authorize("orders:read"), getOrderByIdController);
 
 // 3. Create a new order - requires 'orders:write'

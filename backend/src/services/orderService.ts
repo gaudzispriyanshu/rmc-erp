@@ -44,6 +44,25 @@ export const getAllOrders = async () => {
   return result.rows;
 };
 
+export const getRecentOrders = async (limit: number = 5) => {
+  const result = await pool.query(
+    `
+    SELECT 
+      orders.*, 
+      customers.name AS customer_name,
+      mix_designs.grade_name AS concrete_grade
+    FROM orders
+    LEFT JOIN customers ON orders.customer_id = customers.id
+    LEFT JOIN mix_designs ON orders.mix_design_id = mix_designs.id
+    ORDER BY orders.created_at DESC
+    LIMIT $1
+    `,
+    [limit]
+  );
+
+  return result.rows;
+};
+
 export const getOrderById = async (id: number) => {
   const result = await pool.query(
     `

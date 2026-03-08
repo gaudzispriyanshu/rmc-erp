@@ -4,6 +4,7 @@ import cors from 'cors';
 import pool from './config/db';
 import orderRoutes from './routes/orders';
 import authRoutes from './routes/auth';
+import roleRoutes from './routes/roles';
 import { authenticate } from './middleware/auth';
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/roles', roleRoutes);
 
 // Protected route example
 // We extend Request type for `user` in a declaration file (see instructions below).
