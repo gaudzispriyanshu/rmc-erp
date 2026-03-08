@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   wrapper: {
     minHeight: '100vh',
     display: 'flex',
@@ -121,7 +121,7 @@ const Login = () => {
 
   const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -129,7 +129,7 @@ const Login = () => {
     const result = await login(email, password);
 
     if (!result.success) {
-      setError(result.error);
+      setError(result.error || 'Authentication failed');
     }
 
     setLoading(false);
@@ -197,10 +197,10 @@ const Login = () => {
               ...(loading ? styles.buttonDisabled : {}),
             }}
             onMouseEnter={(e) => {
-              if (!loading) e.target.style.transform = 'translateY(-1px)';
+              if (!loading) e.currentTarget.style.transform = 'translateY(-1px)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
             {loading ? 'Signing in...' : 'Sign In'}

@@ -1,7 +1,29 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 
-const AuthContext = createContext();
+export interface User {
+  id: number;
+  email: string;
+  name?: string;
+  role?: string;
+  [key: string]: any; // fallback for missing fields
+}
+
+interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (userData: any) => Promise<AuthResult>;
+  logout: () => void;
+  API_URL: string;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -11,9 +33,9 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // API base URL
   const API_URL = 'http://localhost:5000/api';
@@ -40,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
@@ -51,30 +73,30 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      
+
       return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Login failed' 
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Login failed'
       };
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData: any): Promise<AuthResult> => {
     try {
       const response = await axios.post(`${API_URL}/auth/register`, userData);
-      
+
       const { token, user } = response.data;
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      
+
       return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Registration failed' 
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Registration failed'
       };
     }
   };

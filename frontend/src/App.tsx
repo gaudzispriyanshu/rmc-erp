@@ -3,12 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/layout/Layout';
 import Login from './components/Login';
-import Dashboard from './pages/Dashboard';
-import SecurityRoles from './pages/SecurityRoles';
-import Orders from './pages/Orders';
+import Dashboard from './pages/operations/dashboard/Dashboard';
+import SecurityRoles from './pages/system/administartion/systemRoles/SecurityRoles';
+import Orders from './pages/operations/orders/Orders';
 
 // Placeholder page for routes not yet built
-const ComingSoon = ({ title }) => (
+const ComingSoon = ({ title }: { title: string }) => (
   <div style={{
     display: 'flex',
     flexDirection: 'column',
@@ -24,7 +24,7 @@ const ComingSoon = ({ title }) => (
 );
 
 // Redirect to login if not authenticated
-const RequireAuth = ({ children }) => {
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
   if (loading) {

@@ -1,0 +1,44 @@
+src/App.tsx(28,11): error TS2339: Property 'user' does not exist on type '{}'.
+src/App.tsx(28,17): error TS2339: Property 'loading' does not exist on type '{}'.
+src/App.tsx(54,11): error TS2339: Property 'user' does not exist on type '{}'.
+src/App.tsx(54,17): error TS2339: Property 'loading' does not exist on type '{}'.
+src/components/layout/Layout.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(24,20): error TS7031: Binding element 'isOpen' implicitly has an 'any' type.
+src/components/layout/Sidebar.tsx(24,28): error TS7031: Binding element 'setIsOpen' implicitly has an 'any' type.
+src/components/layout/TopBar.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/layout/TopBar.tsx(5,19): error TS7031: Binding element 'toggleSidebar' implicitly has an 'any' type.
+src/components/layout/TopBar.tsx(6,13): error TS2339: Property 'user' does not exist on type '{}'.
+src/components/layout/TopBar.tsx(6,19): error TS2339: Property 'logout' does not exist on type '{}'.
+src/components/layout/TopBar.tsx(12,37): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/layout/TopBar.tsx(13,61): error TS2339: Property 'contains' does not exist on type 'never'.
+src/components/layout/TopBar.tsx(21,26): error TS7006: Parameter 'name' implicitly has an 'any' type.
+src/components/layout/TopBar.tsx(25,19): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/Login.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/Login.tsx(122,11): error TS2339: Property 'login' does not exist on type '{}'.
+src/components/Login.tsx(124,31): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/Login.tsx(146,13): error TS2322: Type '{ fontSize: string; fontWeight: string; color: string; marginBottom: string; textAlign: string; }' is not assignable to type 'Properties<string | number, string & {}>'.
+  Types of property 'textAlign' are incompatible.
+    Type 'string' is not assignable to type 'TextAlign | undefined'.
+src/components/Login.tsx(147,12): error TS2322: Type '{ fontSize: string; color: string; marginBottom: string; textAlign: string; }' is not assignable to type 'Properties<string | number, string & {}>'.
+  Types of property 'textAlign' are incompatible.
+    Type 'string' is not assignable to type 'TextAlign | undefined'.
+src/components/Login.tsx(159,13): error TS2322: Type '{ width: string; padding: string; border: string; borderRadius: string; fontSize: string; color: string; background: string; outline: string; transition: string; marginBottom: string; boxSizing: string; }' is not assignable to type 'Properties<string | number, string & {}>'.
+  Types of property 'boxSizing' are incompatible.
+    Type 'string' is not assignable to type 'BoxSizing | undefined'.
+src/components/Login.tsx(179,13): error TS2322: Type '{ width: string; padding: string; border: string; borderRadius: string; fontSize: string; color: string; background: string; outline: string; transition: string; marginBottom: string; boxSizing: string; }' is not assignable to type 'Properties<string | number, string & {}>'.
+  Types of property 'boxSizing' are incompatible.
+    Type 'string' is not assignable to type 'BoxSizing | undefined'.
+src/components/Login.tsx(200,38): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/components/Login.tsx(203,24): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/components/Login.tsx(210,14): error TS2322: Type '{ marginTop: string; padding: string; background: string; borderRadius: string; fontSize: string; color: string; textAlign: string; border: string; }' is not assignable to type 'Properties<string | number, string & {}>'.
+  Types of property 'textAlign' are incompatible.
+    Type 'string' is not assignable to type 'TextAlign | undefined'.
+src/context/AuthContext.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/context/AuthContext.tsx(4,21): error TS2554: Expected 1 arguments, but got 0.
+src/context/AuthContext.tsx(14,32): error TS7031: Binding element 'children' implicitly has an 'any' type.
+src/context/AuthContext.tsx(43,24): error TS7006: Parameter 'email' implicitly has an 'any' type.
+src/context/AuthContext.tsx(43,31): error TS7006: Parameter 'password' implicitly has an 'any' type.
+src/context/AuthContext.tsx(59,16): error TS18046: 'error' is of type 'unknown'.
+src/context/AuthContext.tsx(64,27): error TS7006: Parameter 'userData' implicitly has an 'any' type.
+src/context/AuthContext.tsx(77,16): error TS18046: 'error' is of type 'unknown'.

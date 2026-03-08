@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import './Orders.css';
 
 const STATUSES = ['all', 'pending', 'in_progress', 'completed', 'delivered', 'cancelled'];
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string) => {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-US', {
@@ -15,7 +15,7 @@ const formatDate = (dateStr) => {
     });
 };
 
-const formatTime = (dateStr) => {
+const formatTime = (dateStr: string) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return d.toLocaleTimeString('en-US', {
@@ -25,7 +25,7 @@ const formatTime = (dateStr) => {
     });
 };
 
-const statusLabel = (status) => {
+const statusLabel = (status: string) => {
     if (!status) return 'Unknown';
     return status
         .replace(/_/g, ' ')
@@ -34,9 +34,26 @@ const statusLabel = (status) => {
 
 const PAGE_SIZE = 10;
 
+interface Order {
+    id: number;
+    customer_id?: number;
+    customer_name?: string;
+    delivery_address?: string;
+    mix_design_id?: number;
+    concrete_grade?: string;
+    quantity: number | string;
+    status: string;
+    created_at: string;
+}
+
+interface MixDesign {
+    id: number;
+    grade_name: string;
+}
+
 const Orders = () => {
     const { API_URL } = useAuth();
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [stats, setStats] = useState({ total: 0, pending: 0, completedToday: 0 });
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
@@ -49,7 +66,7 @@ const Orders = () => {
     const [dateTo, setDateTo] = useState('');
 
     // Mix designs for dropdown
-    const [mixDesigns, setMixDesigns] = useState([]);
+    const [mixDesigns, setMixDesigns] = useState<MixDesign[]>([]);
 
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -73,7 +90,7 @@ const Orders = () => {
             const start = (page - 1) * PAGE_SIZE;
             const end = start + PAGE_SIZE - 1;
 
-            const params = { start, end };
+            const params: Record<string, any> = { start, end };
             if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
             if (mixTypeFilter) params.mix_type_id = mixTypeFilter;
             if (dateFrom) params.date_from = dateFrom;
@@ -106,7 +123,7 @@ const Orders = () => {
         fetchStats();
     }, [fetchStats]);
 
-    const handleFilterChange = (setter) => (e) => {
+    const handleFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         setter(e.target.value);
         setPage(1); // Reset to first page on filter change
     };
@@ -129,7 +146,7 @@ const Orders = () => {
         const pages = [];
         const maxVisible = 5;
         let start = Math.max(1, page - Math.floor(maxVisible / 2));
-        let end = Math.min(totalPages, start + maxVisible - 1);
+        const end = Math.min(totalPages, start + maxVisible - 1);
         if (end - start < maxVisible - 1) {
             start = Math.max(1, end - maxVisible + 1);
         }
@@ -246,13 +263,13 @@ const Orders = () => {
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>
+                                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>
                                     Loading orders...
                                 </td>
                             </tr>
                         ) : orders.length === 0 ? (
                             <tr>
-                                <td colSpan="7">
+                                <td colSpan={7}>
                                     <div className="empty-state">
                                         <span>📦</span>
                                         <p>No orders found.</p>

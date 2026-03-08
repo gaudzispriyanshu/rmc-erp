@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
 import './SecurityRoles.css';
 
 // Maps action_slug patterns to human-readable action names
-const ACTION_MAP = {
+const ACTION_MAP: Record<string, string> = {
     read: 'View',
     write: 'Add',
     update: 'Update',
@@ -14,7 +14,7 @@ const ACTION_MAP = {
 const ACTION_ORDER = ['read', 'write', 'update', 'delete'];
 
 // Parse "orders:read" → { module: "Orders", action: "read" }
-const parseSlug = (slug) => {
+const parseSlug = (slug: string) => {
     const [module, action] = slug.split(':');
     return {
         module: module.charAt(0).toUpperCase() + module.slice(1),
@@ -23,8 +23,30 @@ const parseSlug = (slug) => {
 };
 
 // Group permissions by module
-const groupPermissions = (permissions) => {
-    const groups = {};
+export interface Role {
+    id: number;
+    name: string;
+    description: string;
+}
+
+export interface Permission {
+    id: number;
+    action_slug: string;
+    description: string;
+}
+
+export interface ModuleGroup {
+    module: string;
+    actions: Record<string, number>;
+}
+
+export interface StatusMsg {
+    type: 'success' | 'error';
+    msg: string;
+}
+
+const groupPermissions = (permissions: Permission[]): ModuleGroup[] => {
+    const groups: Record<string, ModuleGroup> = {};
     permissions.forEach((p) => {
         const { module, action } = parseSlug(p.action_slug);
         if (!groups[module]) {
@@ -37,13 +59,13 @@ const groupPermissions = (permissions) => {
 
 const SecurityRoles = () => {
     const { API_URL } = useAuth();
-    const [roles, setRoles] = useState([]);
-    const [permissions, setPermissions] = useState([]);
-    const [modules, setModules] = useState([]);
-    const [rolePerms, setRolePerms] = useState({}); // { roleId: Set(permissionId) }
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [, setPermissions] = useState<Permission[]>([]);
+    const [modules, setModules] = useState<ModuleGroup[]>([]);
+    const [rolePerms, setRolePerms] = useState<Record<number, Set<number>>>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [status, setStatus] = useState(null);
+    const [status, setStatus] = useState<StatusMsg | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [newRole, setNewRole] = useState({ name: '', description: '' });
 
@@ -62,17 +84,17 @@ const SecurityRoles = () => {
             setModules(groupPermissions(permissions));
 
             // Build rolePerms map
-            const map = {};
-            roles.forEach((r) => {
+            const map: Record<number, Set<number>> = {};
+            roles.forEach((r: Role) => {
                 map[r.id] = new Set();
             });
-            matrix.forEach((m) => {
+            matrix.forEach((m: { role_id: number; permission_id: number }) => {
                 if (map[m.role_id]) {
                     map[m.role_id].add(m.permission_id);
                 }
             });
             setRolePerms(map);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch matrix:', err);
             setStatus({ type: 'error', msg: 'Failed to load roles and permissions.' });
         } finally {
@@ -80,7 +102,7 @@ const SecurityRoles = () => {
         }
     };
 
-    const togglePermission = (roleId, permissionId) => {
+    const togglePermission = (roleId: number, permissionId: number) => {
         setRolePerms((prev) => {
             const updated = { ...prev };
             const set = new Set(updated[roleId]);
@@ -107,7 +129,7 @@ const SecurityRoles = () => {
             await Promise.all(promises);
             setStatus({ type: 'success', msg: 'Permissions saved successfully!' });
             setTimeout(() => setStatus(null), 3000);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Save failed:', err);
             setStatus({ type: 'error', msg: 'Failed to save permissions.' });
         } finally {
@@ -124,20 +146,20 @@ const SecurityRoles = () => {
             fetchMatrix(); // Refresh
             setStatus({ type: 'success', msg: `Role "${newRole.name}" created!` });
             setTimeout(() => setStatus(null), 3000);
-        } catch (err) {
+        } catch (err: any) {
             const errMsg = err.response?.data?.error || 'Failed to create role.';
             setStatus({ type: 'error', msg: errMsg });
         }
     };
 
-    const handleDeleteRole = async (roleId, roleName) => {
+    const handleDeleteRole = async (roleId: number, roleName: string) => {
         if (!window.confirm(`Are you sure you want to delete the role "${roleName}"?`)) return;
         try {
             await axios.delete(`${API_URL}/roles/${roleId}`);
             fetchMatrix();
             setStatus({ type: 'success', msg: `Role "${roleName}" deleted.` });
             setTimeout(() => setStatus(null), 3000);
-        } catch (err) {
+        } catch {
             setStatus({ type: 'error', msg: 'Failed to delete role.' });
         }
     };

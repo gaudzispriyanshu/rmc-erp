@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 
@@ -21,7 +21,12 @@ const adminSubLinks = [
     { to: '/administration/settings', label: 'System Settings' },
 ];
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
+interface SidebarProps {
+    isOpen: boolean;
+    setIsOpen?: (isOpen: boolean) => void;
+}
+
+const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     const location = useLocation();
     const isAdminActive = location.pathname.startsWith('/administration');
     const [adminOpen, setAdminOpen] = useState(isAdminActive);

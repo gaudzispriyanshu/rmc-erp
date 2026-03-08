@@ -1,0 +1,3 @@
+src/App.tsx(6,23): error TS2307: Cannot find module './pages/Dashboard' or its corresponding type declarations.
+src/App.tsx(7,27): error TS2307: Cannot find module './pages/SecurityRoles' or its corresponding type declarations.
+src/App.tsx(8,20): error TS2307: Cannot find module './pages/Orders' or its corresponding type declarations.
