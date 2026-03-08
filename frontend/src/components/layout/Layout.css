@@ -14,3 +14,43 @@
     min-height: calc(100vh - var(--topbar-height));
     background: var(--content-bg);
 }
+
+/* Sidebar Overlay for mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 95;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .layout-main {
+        margin-left: 0;
+    }
+
+    .layout-content {
+        padding: 20px 16px;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        /* Only shows when rendered in React */
+    }
+}

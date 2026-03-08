@@ -4,25 +4,36 @@ import {
   getAllOrdersController,
   getOrderByIdController,
   updateOrderController,
-  getRecentOrdersController
+  getRecentOrdersController,
+  getOrderStatsController,
+  getMixDesignsController
 } from "../controllers/orderController";
 import { authenticate, authorize } from "../middleware/auth";
 
 const router = Router();
 
-// 1. View all orders - requires 'orders:read' permission
-router.get("/", authenticate, authorize("orders:read"), getAllOrdersController);
+// Static routes FIRST (before /:id)
 
-// 2. View recent orders (dashboard) - must be BEFORE /:id to avoid conflict
+// 1. Order stats for dashboard cards
+router.get("/stats", authenticate, authorize("orders:read"), getOrderStatsController);
+
+// 2. Recent orders for dashboard
 router.get("/recent", authenticate, authorize("orders:read"), getRecentOrdersController);
 
-// 3. View a specific order - also requires 'orders:read'
+// 3. Mix designs list for filter dropdowns
+router.get("/mix-designs", authenticate, authorize("orders:read"), getMixDesignsController);
+
+// 4. List all orders with pagination + filters
+//    ?start=0&end=9&status=pending&mix_type_id=1&date_from=2026-01-01&date_to=2026-03-08
+router.get("/", authenticate, authorize("orders:read"), getAllOrdersController);
+
+// 5. View a specific order
 router.get("/:id", authenticate, authorize("orders:read"), getOrderByIdController);
 
-// 3. Create a new order - requires 'orders:write'
+// 6. Create a new order
 router.post("/", authenticate, authorize("orders:write"), createOrderController);
 
-// 4. Update an existing order - requires 'orders:update'
+// 7. Update an existing order
 router.put("/:id", authenticate, authorize("orders:update"), updateOrderController);
 
 export default router;

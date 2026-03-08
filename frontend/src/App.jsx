@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout';
 import Login from './components/Login';
 import Dashboard from './pages/Dashboard';
 import SecurityRoles from './pages/SecurityRoles';
+import Orders from './pages/Orders';
 
 // Placeholder page for routes not yet built
 const ComingSoon = ({ title }) => (
@@ -73,7 +74,7 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="orders" element={<ComingSoon title="Orders" />} />
+            <Route path="orders" element={<Orders />} />
             <Route path="inventory" element={<ComingSoon title="Inventory" />} />
             <Route path="vehicles" element={<ComingSoon title="Vehicles" />} />
             <Route path="trips" element={<ComingSoon title="Trips" />} />

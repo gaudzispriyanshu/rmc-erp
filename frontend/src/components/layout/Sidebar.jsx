@@ -21,13 +21,20 @@ const adminSubLinks = [
     { to: '/administration/settings', label: 'System Settings' },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
     const isAdminActive = location.pathname.startsWith('/administration');
     const [adminOpen, setAdminOpen] = useState(isAdminActive);
 
+    // Close sidebar on mobile when navigating
+    const handleNavClick = () => {
+        if (window.innerWidth <= 1024 && setIsOpen) {
+            setIsOpen(false);
+        }
+    };
+
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
             {/* Brand */}
             <div className="sidebar-brand">
                 <div className="sidebar-brand-icon">🏗️</div>
@@ -44,6 +51,7 @@ const Sidebar = () => {
                                 key={link.to}
                                 to={link.to}
                                 end={link.to === '/'}
+                                onClick={handleNavClick}
                                 className={({ isActive }) =>
                                     `sidebar-link${isActive ? ' active' : ''}`
                                 }
@@ -75,6 +83,7 @@ const Sidebar = () => {
                                 <NavLink
                                     key={link.to}
                                     to={link.to}
+                                    onClick={handleNavClick}
                                     className={({ isActive }) =>
                                         `sidebar-sublink${isActive ? ' active' : ''}`
                                     }
@@ -88,6 +97,7 @@ const Sidebar = () => {
                     {/* Reports */}
                     <NavLink
                         to="/reports"
+                        onClick={handleNavClick}
                         className={({ isActive }) =>
                             `sidebar-link${isActive ? ' active' : ''}`
                         }

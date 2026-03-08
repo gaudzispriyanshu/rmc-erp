@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './TopBar.css';
 
-const TopBar = () => {
+const TopBar = ({ toggleSidebar }) => {
     const { user, logout } = useAuth();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -30,6 +30,11 @@ const TopBar = () => {
 
     return (
         <header className="topbar">
+            {/* Hamburger (mobile only) */}
+            <button className="topbar-hamburger" onClick={toggleSidebar}>
+                ☰
+            </button>
+
             {/* Search */}
             <div className="topbar-search">
                 <span className="topbar-search-icon">🔍</span>
