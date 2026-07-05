@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { APP_NAME, APP_VERSION, COPYRIGHT } from '../../version';
 import './Sidebar.css';
 
 const navSections = [
@@ -126,7 +127,8 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
 
             {/* Footer */}
             <div className="sidebar-footer">
-                <div className="sidebar-footer-version">RMC ERP v1.0</div>
+                <div className="sidebar-footer-version">{APP_NAME} v{APP_VERSION}</div>
+                <div className="sidebar-footer-copyright">{COPYRIGHT}</div>
             </div>
         </aside>
     );
