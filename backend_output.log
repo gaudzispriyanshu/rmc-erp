@@ -1,0 +1,10 @@
+
+> backend@1.0.0 dev
+> ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts
+
+[INFO] 13:39:09 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+Server running on port 5001
+Order Creation Error: invalid input syntax for type integer: "1 OR 1=1"
+Record Stock Movement Error: invalid input syntax for type numeric: "a lot"
+Record Stock Movement Error: insert or update on table "stock_movements" violates foreign key constraint "stock_movements_inventory_item_id_fkey"
+Create Vehicle Error: duplicate key value violates unique constraint "vehicles_plate_number_key"

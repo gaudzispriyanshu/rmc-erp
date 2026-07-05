@@ -1,5 +1,28 @@
 {
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "supabase": "^2.67.3"
-  }
+  },
+  "name": "app",
+  "version": "1.0.0",
+  "description": "A modern, responsive Enterprise Resource Planning (ERP) system tailored for Ready-Mix Concrete (RMC) operations. This application manages the entire lifecycle of concrete dispatch, from order creation and inventory tracking to live vehicle routing and role-based access control.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gaudzispriyanshu/rmc-erp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gaudzispriyanshu/rmc-erp/issues"
+  },
+  "homepage": "https://github.com/gaudzispriyanshu/rmc-erp#readme"
 }
