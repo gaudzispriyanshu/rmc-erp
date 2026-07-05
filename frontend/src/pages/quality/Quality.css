@@ -1,0 +1,26 @@
+.qc-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 20px;
+}
+
+.qc-tab {
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: var(--transition);
+}
+
+.qc-tab:hover { color: var(--gray-700); }
+
+.qc-tab.active {
+    color: var(--primary-600);
+    border-bottom-color: var(--primary-600);
+}

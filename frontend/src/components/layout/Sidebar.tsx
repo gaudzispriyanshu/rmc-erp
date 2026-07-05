@@ -8,15 +8,26 @@ const navSections = [
         links: [
             { to: '/', icon: '📊', label: 'Dashboard' },
             { to: '/orders', icon: '📋', label: 'Orders' },
-            { to: '/inventory', icon: '📦', label: 'Inventory' },
-            { to: '/vehicles', icon: '🚛', label: 'Vehicles' },
             { to: '/trips', icon: '🗺️', label: 'Trips' },
+            { to: '/dispatch', icon: '🚚', label: 'Dispatch' },
+            { to: '/quality', icon: '🧪', label: 'Quality' },
+        ],
+    },
+    {
+        title: 'Masters',
+        links: [
+            { to: '/customers', icon: '🤝', label: 'Customers' },
+            { to: '/drivers', icon: '👤', label: 'Drivers' },
+            { to: '/vehicles', icon: '🚛', label: 'Vehicles' },
+            { to: '/inventory', icon: '📦', label: 'Inventory' },
+            { to: '/mix-designs', icon: '🧱', label: 'Mix Designs' },
         ],
     },
 ];
 
 const adminSubLinks = [
     { to: '/administration/security-roles', label: 'Security Roles' },
+    { to: '/administration/workflows', label: 'Workflows' },
     { to: '/administration/users', label: 'Users' },
     { to: '/administration/settings', label: 'System Settings' },
 ];

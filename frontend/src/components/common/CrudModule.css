@@ -1,0 +1,254 @@
+.crud-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.crud-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+}
+
+.crud-header p {
+    color: var(--gray-500);
+    font-size: 14px;
+}
+
+.crud-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.crud-search {
+    padding: 8px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--gray-700);
+    background: var(--card-bg);
+    outline: none;
+    min-width: 260px;
+    transition: var(--transition);
+}
+
+.crud-search:focus {
+    border-color: var(--primary-300);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Table */
+.crud-table-wrap {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-100);
+    overflow: hidden;
+}
+
+.crud-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.crud-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--gray-500);
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.crud-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--gray-700);
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: middle;
+}
+
+.crud-table tr:last-child td { border-bottom: none; }
+.crud-table tr:hover td { background: var(--gray-50); }
+
+.crud-loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--gray-400);
+}
+
+.crud-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+    color: var(--gray-400);
+}
+
+.crud-empty span { font-size: 40px; margin-bottom: 12px; }
+
+.crud-action-btn {
+    background: none;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    margin-right: 6px;
+    transition: var(--transition);
+}
+
+.crud-action-btn:hover { background: var(--gray-50); border-color: var(--gray-300); }
+.crud-action-btn.danger { color: #dc2626; }
+.crud-action-btn.danger:hover { background: rgba(239, 68, 68, 0.08); border-color: #fca5a5; }
+
+/* Pagination (shared look with Orders) */
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-top: 1px solid var(--gray-100);
+}
+
+.pagination-info { font-size: 13px; color: var(--gray-500); }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+
+.page-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.page-btn:hover:not(:disabled) { background: var(--gray-50); border-color: var(--gray-300); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-btn.active { background: var(--primary-600); color: #fff; border-color: var(--primary-600); }
+
+/* Modal */
+.crud-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: crud-fade 0.15s ease;
+}
+
+@keyframes crud-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.crud-modal {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    width: 440px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.crud-modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 20px;
+}
+
+.crud-field { margin-bottom: 16px; display: flex; flex-direction: column; }
+
+.crud-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+}
+
+.crud-field .req { color: #ef4444; }
+
+.crud-field input,
+.crud-field select,
+.crud-field textarea {
+    padding: 9px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--card-bg);
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.crud-field textarea { min-height: 72px; resize: vertical; }
+
+.crud-field input:focus,
+.crud-field select:focus,
+.crud-field textarea:focus {
+    border-color: var(--primary-300);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.crud-error {
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.crud-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* View (read-only) modal */
+.crud-view { margin-bottom: 16px; }
+
+.crud-view-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+}
+
+.crud-view-row:last-child { border-bottom: none; }
+.crud-view-row > span { color: var(--gray-500); font-weight: 500; }
+.crud-view-row > div, .crud-view-row > b { color: var(--gray-800); text-align: right; }
+
+/* Status badges (shared across master-data + QC + dispatch pages) */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge.pending { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.status-badge.in_progress { background: rgba(59, 130, 246, 0.12); color: var(--primary-600); }
+.status-badge.completed,
+.status-badge.delivered { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.status-badge.cancelled { background: rgba(239, 68, 68, 0.12); color: #dc2626; }

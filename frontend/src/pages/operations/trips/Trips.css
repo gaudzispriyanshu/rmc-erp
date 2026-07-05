@@ -1,0 +1,18 @@
+.trips-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.trips-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+}
+
+.trips-header p {
+    color: var(--gray-500);
+    font-size: 14px;
+}

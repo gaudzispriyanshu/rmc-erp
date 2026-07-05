@@ -6,7 +6,9 @@ import {
   updateOrderController,
   getRecentOrdersController,
   getOrderStatsController,
-  getMixDesignsController
+  getMixDesignsController,
+  changeOrderStatusController,
+  deleteOrderController
 } from "../controllers/orderController";
 import { authenticate, authorize } from "../middleware/auth";
 
@@ -35,5 +37,11 @@ router.post("/", authenticate, authorize("orders:write"), createOrderController)
 
 // 7. Update an existing order
 router.put("/:id", authenticate, authorize("orders:update"), updateOrderController);
+
+// 8. Advance an order along its workflow (transition-guarded)
+router.patch("/:id/status", authenticate, authorize("orders:update"), changeOrderStatusController);
+
+// 9. Delete an order
+router.delete("/:id", authenticate, authorize("orders:delete"), deleteOrderController);
 
 export default router;

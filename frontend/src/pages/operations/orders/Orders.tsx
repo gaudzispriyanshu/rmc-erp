@@ -1,36 +1,21 @@
 import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
+import WorkflowStatus, { WfState, Transition } from '../../../components/common/WorkflowStatus';
+import DataTable, { DTAction } from '../../../components/common/DataTable';
+import '../../../components/common/CrudModule.css';
 import './Orders.css';
 
-const STATUSES = ['all', 'pending', 'in_progress', 'completed', 'delivered', 'cancelled'];
+const STATUSES = ['all', 'pending', 'confirmed', 'in_production', 'dispatched', 'delivered', 'closed', 'cancelled'];
 
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr?: string) => {
     if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
+    return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
-const formatTime = (dateStr: string) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    });
-};
-
-const statusLabel = (status: string) => {
-    if (!status) return 'Unknown';
-    return status
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-};
+const statusLabel = (status: string) =>
+    !status ? 'Unknown' : status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 const PAGE_SIZE = 10;
 
@@ -43,54 +28,61 @@ interface Order {
     concrete_grade?: string;
     quantity: number | string;
     status: string;
+    workflow_state_id?: number | null;
+    delivery_date?: string;
     created_at: string;
 }
 
-interface MixDesign {
-    id: number;
-    grade_name: string;
-}
+interface MixDesign { id: number; grade_name: string; }
 
 const Orders = () => {
     const { API_URL } = useAuth();
+    const navigate = useNavigate();
     const [orders, setOrders] = useState<Order[]>([]);
     const [stats, setStats] = useState({ total: 0, pending: 0, completedToday: 0 });
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    // Filters
     const [statusFilter, setStatusFilter] = useState('all');
     const [mixTypeFilter, setMixTypeFilter] = useState('');
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
-
-    // Mix designs for dropdown
     const [mixDesigns, setMixDesigns] = useState<MixDesign[]>([]);
 
-    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const [states, setStates] = useState<WfState[]>([]);
+    const [transitions, setTransitions] = useState<Transition[]>([]);
 
-    // Fetch mix designs on mount
+    const [viewing, setViewing] = useState<Order | null>(null);
+
+    const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+
     useEffect(() => {
-        const fetchMixDesigns = async () => {
+        const run = async () => {
             try {
                 const res = await axios.get(`${API_URL}/orders/mix-designs`);
                 setMixDesigns(res.data);
-            } catch (err) {
-                console.error('Failed to fetch mix designs:', err);
-            }
+            } catch (err) { console.error('Failed to fetch mix designs:', err); }
         };
-        fetchMixDesigns();
+        run();
     }, [API_URL]);
 
-    // Fetch orders with filters
+    useEffect(() => {
+        const run = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/workflows`, { params: { entity_type: 'order' } });
+                setStates(res.data.states);
+                setTransitions(res.data.transitions);
+            } catch (err) { console.error('Failed to fetch order workflow:', err); }
+        };
+        run();
+    }, [API_URL]);
+
     const fetchOrders = useCallback(async () => {
         try {
             setLoading(true);
             const start = (page - 1) * PAGE_SIZE;
-            const end = start + PAGE_SIZE - 1;
-
-            const params: Record<string, any> = { start, end };
+            const params: Record<string, any> = { start, end: start + PAGE_SIZE - 1 };
             if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
             if (mixTypeFilter) params.mix_type_id = mixTypeFilter;
             if (dateFrom) params.date_from = dateFrom;
@@ -110,252 +102,134 @@ const Orders = () => {
         try {
             const res = await axios.get(`${API_URL}/orders/stats`);
             setStats(res.data);
-        } catch (err) {
-            console.error('Failed to fetch stats:', err);
-        }
+        } catch (err) { console.error('Failed to fetch stats:', err); }
     }, [API_URL]);
 
-    useEffect(() => {
-        fetchOrders();
-    }, [fetchOrders]);
+    useEffect(() => { fetchOrders(); }, [fetchOrders]);
+    useEffect(() => { fetchStats(); }, [fetchStats]);
 
-    useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
-
-    const handleFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-        setter(e.target.value);
-        setPage(1); // Reset to first page on filter change
-    };
+    const handleFilter = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+        (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => { setter(e.target.value); setPage(1); };
 
     const clearFilters = () => {
-        setStatusFilter('all');
-        setMixTypeFilter('');
-        setDateFrom('');
-        setDateTo('');
-        setPage(1);
+        setStatusFilter('all'); setMixTypeFilter(''); setDateFrom(''); setDateTo(''); setPage(1);
     };
 
     const hasActiveFilters = statusFilter !== 'all' || mixTypeFilter || dateFrom || dateTo;
 
-    // Pagination range
-    const startItem = total > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
-    const endItem = Math.min(page * PAGE_SIZE, total);
-
-    const getPageNumbers = () => {
-        const pages = [];
-        const maxVisible = 5;
-        let start = Math.max(1, page - Math.floor(maxVisible / 2));
-        const end = Math.min(totalPages, start + maxVisible - 1);
-        if (end - start < maxVisible - 1) {
-            start = Math.max(1, end - maxVisible + 1);
+    const handleDelete = async (order: Order) => {
+        if (!window.confirm('Delete this order?')) return;
+        try {
+            await axios.delete(`${API_URL}/orders/${order.id}`);
+            fetchOrders();
+        } catch (err: any) {
+            alert(err.response?.data?.error || 'Delete failed.');
         }
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        return pages;
     };
+
+    const rowActions = (order: Order): DTAction[] => [
+        { label: 'View', onClick: () => setViewing(order) },
+        { label: 'Edit', onClick: () => navigate(`/orders/${order.id}/edit`) },
+        { label: 'Delete', danger: true, onClick: () => handleDelete(order) },
+    ];
+
+    const columns = [
+        { key: 'id', label: 'Order ID', render: (o: Order) => <span className="order-id">#ORD-{String(o.id).padStart(4, '0')}</span> },
+        {
+            key: 'customer', label: 'Customer', render: (o: Order) => (
+                <div className="customer-info">
+                    <span className="customer-name">{o.customer_name || `Customer #${o.customer_id}`}</span>
+                    {o.delivery_address && <span className="customer-project">{o.delivery_address}</span>}
+                </div>
+            ),
+        },
+        { key: 'concrete_grade', label: 'Mix Type', render: (o: Order) => <span className="mix-badge">{o.concrete_grade || (o.mix_design_id ? `Mix #${o.mix_design_id}` : '—')}</span> },
+        { key: 'quantity', label: 'Qty (m³)' },
+        { key: 'delivery_date', label: 'Delivery Date', render: (o: Order) => formatDate(o.delivery_date || o.created_at) },
+        {
+            key: 'status', label: 'Status', render: (o: Order) =>
+                states.length > 0
+                    ? <WorkflowStatus states={states} transitions={transitions} row={o} apiPath="/orders" onChanged={fetchOrders} />
+                    : <span className={`status-badge ${o.status}`}>{statusLabel(o.status)}</span>,
+        },
+    ];
 
     return (
         <div>
-            {/* Header */}
             <div className="orders-header">
                 <div>
                     <h1>Orders</h1>
                     <p>Monitor and manage all concrete dispatch requests</p>
                 </div>
-                <button className="btn btn-primary">+ Create New Order</button>
+                <button className="btn btn-primary" onClick={() => navigate('/orders/new')}>+ Create New Order</button>
             </div>
 
-            {/* Stat Cards */}
             <div className="orders-stats">
                 <div className="stat-card">
                     <div className="stat-card-icon blue">📋</div>
-                    <div>
-                        <div className="stat-card-label">Total Orders</div>
-                        <div className="stat-card-value">{stats.total.toLocaleString()}</div>
-                    </div>
+                    <div><div className="stat-card-label">Total Orders</div><div className="stat-card-value">{stats.total.toLocaleString()}</div></div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-card-icon orange">🚚</div>
-                    <div>
-                        <div className="stat-card-label">Pending Deliveries</div>
-                        <div className="stat-card-value">{stats.pending}</div>
-                    </div>
+                    <div><div className="stat-card-label">Pending Deliveries</div><div className="stat-card-value">{stats.pending}</div></div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-card-icon green">✅</div>
-                    <div>
-                        <div className="stat-card-label">Completed Today</div>
-                        <div className="stat-card-value">{stats.completedToday}</div>
-                    </div>
+                    <div><div className="stat-card-label">Completed Today</div><div className="stat-card-value">{stats.completedToday}</div></div>
                 </div>
             </div>
 
-            {/* Filter Bar */}
             <div className="filter-bar">
-                <select
-                    className="filter-select"
-                    value={statusFilter}
-                    onChange={handleFilterChange(setStatusFilter)}
-                >
-                    {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                            Status: {s === 'all' ? 'All' : statusLabel(s)}
-                        </option>
-                    ))}
+                <select className="filter-select" value={statusFilter} onChange={handleFilter(setStatusFilter)}>
+                    {STATUSES.map((s) => <option key={s} value={s}>Status: {s === 'all' ? 'All' : statusLabel(s)}</option>)}
                 </select>
-
-                <select
-                    className="filter-select"
-                    value={mixTypeFilter}
-                    onChange={handleFilterChange(setMixTypeFilter)}
-                >
+                <select className="filter-select" value={mixTypeFilter} onChange={handleFilter(setMixTypeFilter)}>
                     <option value="">Mix Type: All</option>
-                    {mixDesigns.map((m) => (
-                        <option key={m.id} value={m.id}>
-                            {m.grade_name}
-                        </option>
-                    ))}
+                    {mixDesigns.map((m) => <option key={m.id} value={m.id}>{m.grade_name}</option>)}
                 </select>
-
                 <div className="filter-date-group">
                     <label className="filter-date-label">From</label>
-                    <input
-                        type="date"
-                        className="filter-date"
-                        value={dateFrom}
-                        onChange={handleFilterChange(setDateFrom)}
-                    />
+                    <input type="date" className="filter-date" value={dateFrom} onChange={handleFilter(setDateFrom)} />
                 </div>
-
                 <div className="filter-date-group">
                     <label className="filter-date-label">To</label>
-                    <input
-                        type="date"
-                        className="filter-date"
-                        value={dateTo}
-                        onChange={handleFilterChange(setDateTo)}
-                    />
+                    <input type="date" className="filter-date" value={dateTo} onChange={handleFilter(setDateTo)} />
                 </div>
-
-                {hasActiveFilters && (
-                    <button className="filter-clear" onClick={clearFilters}>
-                        Clear All Filters
-                    </button>
-                )}
+                {hasActiveFilters && <button className="filter-clear" onClick={clearFilters}>Clear All Filters</button>}
             </div>
 
-            {/* Orders Table */}
-            <div className="orders-table-wrap">
-                <table className="orders-table">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer Name</th>
-                            <th>Mix Type</th>
-                            <th>Quantity (M³)</th>
-                            <th>Delivery Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>
-                                    Loading orders...
-                                </td>
-                            </tr>
-                        ) : orders.length === 0 ? (
-                            <tr>
-                                <td colSpan={7}>
-                                    <div className="empty-state">
-                                        <span>📦</span>
-                                        <p>No orders found.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : (
-                            orders.map((order) => (
-                                <tr key={order.id}>
-                                    <td>
-                                        <span className="order-id">
-                                            #ORD-{String(order.id).padStart(4, '0')}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="customer-info">
-                                            <span className="customer-name">
-                                                {order.customer_name || `Customer #${order.customer_id}`}
-                                            </span>
-                                            {order.delivery_address && (
-                                                <span className="customer-project">{order.delivery_address}</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className="mix-badge">
-                                            {order.concrete_grade || (order.mix_design_id ? `Mix #${order.mix_design_id}` : '—')}
-                                        </span>
-                                    </td>
-                                    <td>{order.quantity}</td>
-                                    <td>
-                                        <div>
-                                            {formatDate(order.created_at)}
-                                            <div style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
-                                                {formatTime(order.created_at)}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge ${order.status}`}>
-                                            {statusLabel(order.status)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button className="actions-btn" title="Actions">⋮</button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+            <DataTable
+                columns={columns}
+                rows={orders}
+                loading={loading}
+                emptyIcon="📦"
+                emptyText="No orders found."
+                actions={rowActions}
+                page={page}
+                totalPages={totalPages}
+                total={total}
+                onPageChange={setPage}
+            />
 
-                {/* Pagination */}
-                {!loading && total > 0 && (
-                    <div className="pagination-bar">
-                        <div className="pagination-info">
-                            Showing {startItem} to {endItem} of {total.toLocaleString()} orders
+            {viewing && (
+                <div className="crud-modal-overlay" onClick={() => setViewing(null)}>
+                    <div className="crud-modal" onClick={(e) => e.stopPropagation()}>
+                        <h2>Order #ORD-{String(viewing.id).padStart(4, '0')}</h2>
+                        <div className="crud-view">
+                            <div className="crud-view-row"><span>Customer</span><div>{viewing.customer_name || `#${viewing.customer_id}`}</div></div>
+                            <div className="crud-view-row"><span>Mix Type</span><div>{viewing.concrete_grade || `Mix #${viewing.mix_design_id}`}</div></div>
+                            <div className="crud-view-row"><span>Quantity</span><div>{viewing.quantity} m³</div></div>
+                            <div className="crud-view-row"><span>Delivery Date</span><div>{formatDate(viewing.delivery_date || viewing.created_at)}</div></div>
+                            <div className="crud-view-row"><span>Address</span><div>{viewing.delivery_address || '—'}</div></div>
+                            <div className="crud-view-row"><span>Status</span><div>{statusLabel(viewing.status)}</div></div>
                         </div>
-                        <div className="pagination-controls">
-                            <button
-                                className="page-btn"
-                                disabled={page <= 1}
-                                onClick={() => setPage(page - 1)}
-                            >
-                                Previous
-                            </button>
-                            {getPageNumbers().map((p) => (
-                                <button
-                                    key={p}
-                                    className={`page-btn${p === page ? ' active' : ''}`}
-                                    onClick={() => setPage(p)}
-                                >
-                                    {p}
-                                </button>
-                            ))}
-                            <button
-                                className="page-btn"
-                                disabled={page >= totalPages}
-                                onClick={() => setPage(page + 1)}
-                            >
-                                Next
-                            </button>
+                        <div className="crud-modal-actions">
+                            <button className="btn btn-outline" onClick={() => { const id = viewing.id; setViewing(null); navigate(`/orders/${id}/edit`); }}>Edit</button>
+                            <button className="btn btn-primary" onClick={() => setViewing(null)}>Close</button>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

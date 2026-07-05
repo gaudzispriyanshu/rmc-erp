@@ -6,6 +6,16 @@ import Login from './components/Login';
 import Dashboard from './pages/operations/dashboard/Dashboard';
 import SecurityRoles from './pages/system/administartion/systemRoles/SecurityRoles';
 import Orders from './pages/operations/orders/Orders';
+import CreateOrder from './pages/operations/orders/CreateOrder';
+import Trips from './pages/operations/trips/Trips';
+import Customers from './pages/masters/Customers';
+import Drivers from './pages/masters/Drivers';
+import Vehicles from './pages/masters/Vehicles';
+import Inventory from './pages/masters/Inventory';
+import MixDesigns from './pages/masters/MixDesigns';
+import Dispatch from './pages/operations/dispatch/Dispatch';
+import Quality from './pages/quality/Quality';
+import Workflows from './pages/system/administartion/workflows/Workflows';
 
 // Placeholder page for routes not yet built
 const ComingSoon = ({ title }: { title: string }) => (
@@ -75,12 +85,20 @@ function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="orders" element={<Orders />} />
-            <Route path="inventory" element={<ComingSoon title="Inventory" />} />
-            <Route path="vehicles" element={<ComingSoon title="Vehicles" />} />
-            <Route path="trips" element={<ComingSoon title="Trips" />} />
+            <Route path="orders/new" element={<CreateOrder />} />
+            <Route path="orders/:id/edit" element={<CreateOrder />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="drivers" element={<Drivers />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="mix-designs" element={<MixDesigns />} />
+            <Route path="trips" element={<Trips />} />
+            <Route path="dispatch" element={<Dispatch />} />
+            <Route path="quality" element={<Quality />} />
             {/* Administration sub-routes */}
             <Route path="administration" element={<Navigate to="security-roles" replace />} />
             <Route path="administration/security-roles" element={<SecurityRoles />} />
+            <Route path="administration/workflows" element={<Workflows />} />
             <Route path="administration/users" element={<ComingSoon title="Users" />} />
             <Route path="administration/settings" element={<ComingSoon title="System Settings" />} />
             <Route path="reports" element={<ComingSoon title="Reports" />} />

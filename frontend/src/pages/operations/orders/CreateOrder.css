@@ -1,0 +1,21 @@
+.create-order-card {
+    background: var(--card-bg);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    max-width: 720px;
+}
+
+.create-order-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 20px;
+    margin-bottom: 8px;
+}
+
+.create-order-full { grid-column: 1 / -1; }
+
+@media (max-width: 640px) {
+    .create-order-grid { grid-template-columns: 1fr; }
+}

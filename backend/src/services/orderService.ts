@@ -1,6 +1,7 @@
 import pool from "../config/db";
+import { isTransitionAllowed, getStateById } from "./workflowService";
 // Import the generated types (assuming you ran the gen types command)
-// import { Database } from "../types/supabase"; 
+// import { Database } from "../types/supabase";
 
 // Update your interface to match the new database schema
 export interface CreateOrderInput {
@@ -14,17 +15,51 @@ export interface CreateOrderInput {
 export const createOrder = async (data: CreateOrderInput) => {
   const { customer_id, mix_design_id, quantity, delivery_address, delivery_date } = data;
 
+  // workflow_state_id is set to the 'order' workflow's initial state, keeping the
+  // legacy status string ('pending') in sync with the FK.
   const result = await pool.query(
     `
-    INSERT INTO orders 
-      (customer_id, mix_design_id, quantity, delivery_address, delivery_date, status)
-    VALUES 
-      ($1, $2, $3, $4, $5, 'pending')
+    INSERT INTO orders
+      (customer_id, mix_design_id, quantity, delivery_address, delivery_date, status, workflow_state_id)
+    VALUES
+      ($1, $2, $3, $4, $5, 'pending',
+        (SELECT ws.id FROM workflow_states ws
+         JOIN workflows w ON w.id = ws.workflow_id
+         WHERE w.entity_type = 'order' AND w.is_active = TRUE AND ws.is_initial = TRUE
+         LIMIT 1))
     RETURNING *
     `,
     [customer_id, mix_design_id, quantity, delivery_address, delivery_date]
   );
 
+  return result.rows[0];
+};
+
+/**
+ * Move an order to a new workflow state, but only if a transition is defined from
+ * its current state. Throws Error("NOT_FOUND") or Error("ILLEGAL_TRANSITION"); the
+ * controller maps these to 404 / 400.
+ */
+export const changeOrderStatus = async (orderId: number, toStateId: number) => {
+  const current = await pool.query("SELECT workflow_state_id FROM orders WHERE id = $1", [orderId]);
+  if (current.rows.length === 0) throw new Error("NOT_FOUND");
+
+  const fromStateId: number | null = current.rows[0].workflow_state_id;
+  const allowed = await isTransitionAllowed(fromStateId, toStateId);
+  if (!allowed) throw new Error("ILLEGAL_TRANSITION");
+
+  const toState = await getStateById(toStateId);
+  if (!toState) throw new Error("ILLEGAL_TRANSITION");
+
+  const result = await pool.query(
+    "UPDATE orders SET workflow_state_id = $1, status = $2 WHERE id = $3 RETURNING *",
+    [toStateId, toState.slug, orderId]
+  );
+  return result.rows[0];
+};
+
+export const deleteOrder = async (id: number) => {
+  const result = await pool.query("DELETE FROM orders WHERE id = $1 RETURNING *", [id]);
   return result.rows[0];
 };
 
@@ -67,23 +102,19 @@ export const getAllOrders = async (filters: {
     ? `WHERE ${conditions.join(' AND ')}`
     : '';
 
-  // Get total count with filters
-  const countQuery = `SELECT COUNT(*) AS total FROM orders ${whereClause}`;
-  const countResult = await pool.query(countQuery, [...params]);
-  const total = parseInt(countResult.rows[0].total);
-
   // Pagination via start/end
   const start = filters.start || 0;
   const end = filters.end || 9;
   const limit = end - start + 1;
   const offset = start;
 
-  // Get orders
+  // Single query: fetch paginated orders + total count via window function
   const ordersQuery = `
     SELECT 
       orders.*, 
       customers.name AS customer_name,
-      mix_designs.grade_name AS concrete_grade
+      mix_designs.grade_name AS concrete_grade,
+      COUNT(*) OVER() AS _total_count
     FROM orders
     LEFT JOIN customers ON orders.customer_id = customers.id
     LEFT JOIN mix_designs ON orders.mix_design_id = mix_designs.id
@@ -95,11 +126,20 @@ export const getAllOrders = async (filters: {
 
   const ordersResult = await pool.query(ordersQuery, params);
 
+  // Extract total from the first row (all rows carry the same window count).
+  // If no rows matched, total is 0.
+  const total = ordersResult.rows.length > 0
+    ? parseInt(ordersResult.rows[0]._total_count)
+    : 0;
+
+  // Strip the internal _total_count field before returning
+  const orders = ordersResult.rows.map(({ _total_count, ...rest }) => rest);
+
   return {
-    orders: ordersResult.rows,
+    orders,
     total,
     start,
-    end: Math.min(end, start + ordersResult.rows.length - 1),
+    end: Math.min(end, start + orders.length - 1),
   };
 };
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createOrder, getAllOrders, getOrderById, updateOrder, getRecentOrders, getOrderStats, getAllMixDesigns } from "../services/orderService";
+import { createOrder, getAllOrders, getOrderById, updateOrder, getRecentOrders, getOrderStats, getAllMixDesigns, changeOrderStatus, deleteOrder } from "../services/orderService";
 import { Database } from "../types/supabase";
 type OrderWithCustomer = Database['public']['Tables']['orders']['Row'] & {
   customer_name?: string;
@@ -8,10 +8,8 @@ type OrderWithCustomer = Database['public']['Tables']['orders']['Row'] & {
 
 export const createOrderController = async (req: Request, res: Response) => {
   try {
-    // 1. We now expect mix_design_id and delivery_date
     const { customer_id, mix_design_id, quantity, delivery_address, delivery_date } = req.body;
 
-    // 2. Validation
     if (!mix_design_id || !quantity || !delivery_date) {
       return res.status(400).json({ error: "Mix design, quantity, and delivery date are required." });
     }
@@ -27,7 +25,7 @@ export const createOrderController = async (req: Request, res: Response) => {
     res.status(201).json(order);
   } catch (err: any) {
     console.error("Order Creation Error:", err.message);
-    res.status(500).json({ error: "Failed to create order. Ensure the Mix Design ID is valid." });
+    res.status(500).json({ error: "Failed to create order." });
   }
 };
 
@@ -129,5 +127,34 @@ export const updateOrderController = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Update Order Error:", err.message);
     res.status(500).json({ error: "Failed to update order." });
+  }
+};
+
+// Advance an order along its workflow. Body: { workflow_state_id }
+export const changeOrderStatusController = async (req: Request, res: Response) => {
+  try {
+    const { workflow_state_id } = req.body;
+    if (!workflow_state_id) return res.status(400).json({ error: "workflow_state_id is required." });
+
+    const order = await changeOrderStatus(parseInt(req.params.id), workflow_state_id);
+    res.status(200).json(order);
+  } catch (err: any) {
+    if (err.message === "NOT_FOUND") return res.status(404).json({ error: "Order not found" });
+    if (err.message === "ILLEGAL_TRANSITION") {
+      return res.status(400).json({ error: "That status change is not allowed by the workflow." });
+    }
+    console.error("Change Order Status Error:", err.message);
+    res.status(500).json({ error: "Failed to change order status." });
+  }
+};
+
+export const deleteOrderController = async (req: Request, res: Response) => {
+  try {
+    const deleted = await deleteOrder(parseInt(req.params.id));
+    if (!deleted) return res.status(404).json({ error: "Order not found" });
+    res.status(200).json({ message: "Order deleted.", order: deleted });
+  } catch (err: any) {
+    console.error("Delete Order Error:", err.message);
+    res.status(500).json({ error: "Failed to delete order." });
   }
 };
