@@ -23,7 +23,7 @@ router.post("/consume/:orderId", authenticate, authorize("inventory:update"), va
 
 router.get("/", authenticate, authorize("inventory:read"), validate({ query: listInventoryQuerySchema }), getAllInventoryController);
 router.get("/:id", authenticate, authorize("inventory:read"), validate({ params: idParamSchema }), getInventoryByIdController);
-router.post("/", authenticate, authorize("inventory:write"), validate({ body: createInventoryItemSchema }), createInventoryController);
+router.post("/", authenticate, authorize("inventory:write"), validate({ body: createInventoryItemSchema }), idempotency, createInventoryController);
 router.put("/:id", authenticate, authorize("inventory:update"), validate({ params: idParamSchema, body: updateInventoryItemSchema }), updateInventoryController);
 router.delete("/:id", authenticate, authorize("inventory:delete"), validate({ params: idParamSchema }), deleteInventoryController);
 

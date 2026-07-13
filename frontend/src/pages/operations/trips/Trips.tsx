@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import WorkflowStatus, { WfState, Transition } from '../../../components/common/WorkflowStatus';
@@ -40,6 +40,10 @@ const Trips = () => {
     const [error, setError] = useState('');
 
     const [viewing, setViewing] = useState<Trip | null>(null);
+
+    // Fresh idempotency key each time the create modal opens.
+    const idemKey = useRef<string>('');
+    const openCreate = () => { idemKey.current = crypto.randomUUID(); setForm({}); setError(''); setModalOpen(true); };
 
     const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
 
@@ -95,7 +99,7 @@ const Trips = () => {
                 vehicle_id: Number(form.vehicle_id),
                 driver_id: Number(form.driver_id),
                 eta: form.eta,
-            });
+            }, { headers: { 'Idempotency-Key': idemKey.current } });
             setModalOpen(false);
             setForm({});
             fetchTrips();
@@ -142,7 +146,7 @@ const Trips = () => {
                     <h1>Trips</h1>
                     <p>Dispatch trips and track delivery progress</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setModalOpen(true)}>+ Create New Trip</button>
+                <button className="btn btn-primary" onClick={openCreate}>+ Create New Trip</button>
             </div>
 
             <DataTable

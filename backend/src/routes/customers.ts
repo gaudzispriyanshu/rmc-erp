@@ -5,6 +5,7 @@ import {
 } from "../controllers/customerController";
 import { authenticate, authorize } from "../middleware/auth";
 import { validate } from "../middleware/validate";
+import { idempotency } from "../middleware/idempotency";
 import { idParamSchema } from "../schemas/common";
 import {
   createCustomerSchema, updateCustomerSchema, listCustomersQuerySchema,
@@ -14,7 +15,7 @@ const router = Router();
 
 router.get("/", authenticate, authorize("customers:read"), validate({ query: listCustomersQuerySchema }), getAllCustomersController);
 router.get("/:id", authenticate, authorize("customers:read"), validate({ params: idParamSchema }), getCustomerByIdController);
-router.post("/", authenticate, authorize("customers:write"), validate({ body: createCustomerSchema }), createCustomerController);
+router.post("/", authenticate, authorize("customers:write"), validate({ body: createCustomerSchema }), idempotency, createCustomerController);
 router.put("/:id", authenticate, authorize("customers:update"), validate({ params: idParamSchema, body: updateCustomerSchema }), updateCustomerController);
 router.delete("/:id", authenticate, authorize("customers:delete"), validate({ params: idParamSchema }), deleteCustomerController);
 
