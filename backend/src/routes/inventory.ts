@@ -6,6 +6,7 @@ import {
 } from "../controllers/inventoryController";
 import { authenticate, authorize } from "../middleware/auth";
 import { validate } from "../middleware/validate";
+import { idempotency } from "../middleware/idempotency";
 import { idParam, idParamSchema } from "../schemas/common";
 import {
   createInventoryItemSchema, updateInventoryItemSchema, recordStockMovementSchema,
@@ -17,7 +18,7 @@ const router = Router();
 // Static routes FIRST (before /:id)
 router.get("/low-stock", authenticate, authorize("inventory:read"), getLowStockController);
 router.get("/movements", authenticate, authorize("inventory:read"), validate({ query: movementsQuerySchema }), getStockMovementsController);
-router.post("/movements", authenticate, authorize("inventory:update"), validate({ body: recordStockMovementSchema }), recordStockMovementController);
+router.post("/movements", authenticate, authorize("inventory:update"), validate({ body: recordStockMovementSchema }), idempotency, recordStockMovementController);
 router.post("/consume/:orderId", authenticate, authorize("inventory:update"), validate({ params: idParam("orderId") }), consumeForOrderController);
 
 router.get("/", authenticate, authorize("inventory:read"), validate({ query: listInventoryQuerySchema }), getAllInventoryController);

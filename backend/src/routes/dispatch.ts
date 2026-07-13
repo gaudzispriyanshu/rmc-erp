@@ -4,6 +4,7 @@ import {
 } from "../controllers/challanController";
 import { authenticate, authorize } from "../middleware/auth";
 import { validate } from "../middleware/validate";
+import { idempotency } from "../middleware/idempotency";
 import { idParamSchema } from "../schemas/common";
 import { createChallanSchema, listChallansQuerySchema } from "../schemas/challanSchemas";
 
@@ -14,6 +15,6 @@ router.get("/board", authenticate, authorize("dispatch:read"), getDispatchBoardC
 
 router.get("/challans", authenticate, authorize("dispatch:read"), validate({ query: listChallansQuerySchema }), getAllChallansController);
 router.get("/challans/:id", authenticate, authorize("dispatch:read"), validate({ params: idParamSchema }), getChallanByIdController);
-router.post("/challans", authenticate, authorize("dispatch:write"), validate({ body: createChallanSchema }), createChallanController);
+router.post("/challans", authenticate, authorize("dispatch:write"), validate({ body: createChallanSchema }), idempotency, createChallanController);
 
 export default router;

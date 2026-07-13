@@ -12,6 +12,7 @@ import {
 } from "../controllers/orderController";
 import { authenticate, authorize } from "../middleware/auth";
 import { validate } from "../middleware/validate";
+import { idempotency } from "../middleware/idempotency";
 import { idParamSchema } from "../schemas/common";
 import {
   createOrderSchema,
@@ -41,7 +42,7 @@ router.get("/", authenticate, authorize("orders:read"), validate({ query: listOr
 router.get("/:id", authenticate, authorize("orders:read"), validate({ params: idParamSchema }), getOrderByIdController);
 
 // 6. Create a new order
-router.post("/", authenticate, authorize("orders:write"), validate({ body: createOrderSchema }), createOrderController);
+router.post("/", authenticate, authorize("orders:write"), validate({ body: createOrderSchema }), idempotency, createOrderController);
 
 // 7. Update an existing order
 router.put("/:id", authenticate, authorize("orders:update"), validate({ params: idParamSchema, body: updateOrderSchema }), updateOrderController);

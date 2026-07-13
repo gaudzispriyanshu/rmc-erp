@@ -5,6 +5,7 @@ import {
 } from "../controllers/tripController";
 import { authenticate, authorize } from "../middleware/auth";
 import { validate } from "../middleware/validate";
+import { idempotency } from "../middleware/idempotency";
 import { idParamSchema } from "../schemas/common";
 import {
   createTripSchema, updateTripSchema, changeTripStatusSchema, listTripsQuerySchema,
@@ -22,7 +23,7 @@ router.get("/:id", authenticate, authorize("trips:read"), validate({ params: idP
 router.get("/:id/updates", authenticate, authorize("trips:read"), validate({ params: idParamSchema }), getTripUpdatesController);
 
 // 4. Create a trip
-router.post("/", authenticate, authorize("trips:write"), validate({ body: createTripSchema }), createTripController);
+router.post("/", authenticate, authorize("trips:write"), validate({ body: createTripSchema }), idempotency, createTripController);
 
 // 5. Update a trip
 router.put("/:id", authenticate, authorize("trips:update"), validate({ params: idParamSchema, body: updateTripSchema }), updateTripController);
