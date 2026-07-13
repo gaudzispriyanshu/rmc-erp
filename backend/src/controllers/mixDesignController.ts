@@ -27,7 +27,6 @@ export const getMixDesignByIdController = async (req: Request, res: Response) =>
 
 export const createMixDesignController = async (req: Request, res: Response) => {
   try {
-    if (!req.body.grade_name) return res.status(400).json({ error: "grade_name is required." });
     res.status(201).json(await createMixDesign(req.body));
   } catch (err: any) {
     console.error("Create Mix Design Error:", err.message);
@@ -70,9 +69,6 @@ export const getMixRequirementsController = async (req: Request, res: Response) 
 export const setMixRequirementsController = async (req: Request, res: Response) => {
   try {
     const { requirements } = req.body;
-    if (!Array.isArray(requirements)) {
-      return res.status(400).json({ error: "requirements must be an array." });
-    }
     res.status(200).json(await setMixRequirements(parseInt(req.params.id), requirements));
   } catch (err: any) {
     console.error("Set Mix Requirements Error:", err.message);

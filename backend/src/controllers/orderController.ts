@@ -8,11 +8,8 @@ type OrderWithCustomer = Database['public']['Tables']['orders']['Row'] & {
 
 export const createOrderController = async (req: Request, res: Response) => {
   try {
+    // Shape, types, and ranges already enforced by validate({ body: createOrderSchema })
     const { customer_id, mix_design_id, quantity, delivery_address, delivery_date } = req.body;
-
-    if (!mix_design_id || !quantity || !delivery_date) {
-      return res.status(400).json({ error: "Mix design, quantity, and delivery date are required." });
-    }
 
     const order = await createOrder({
       customer_id,
@@ -50,9 +47,6 @@ export const getAllOrdersController = async (req: Request, res: Response) => {
 export const getOrderByIdController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Order ID is required" });
-    }
 
     const order = await getOrderById(parseInt(id));
 
@@ -101,14 +95,6 @@ export const getMixDesignsController = async (req: Request, res: Response) => {
 export const updateOrderController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Order ID is required" });
-    }
-
-    // Check if body is empty
-    if (Object.keys(req.body).length === 0) {
-      return res.status(400).json({ error: "No fields to update provided." });
-    }
 
     // Check if order exists
     const existingOrder = await getOrderById(parseInt(id));
@@ -134,7 +120,6 @@ export const updateOrderController = async (req: Request, res: Response) => {
 export const changeOrderStatusController = async (req: Request, res: Response) => {
   try {
     const { workflow_state_id } = req.body;
-    if (!workflow_state_id) return res.status(400).json({ error: "workflow_state_id is required." });
 
     const order = await changeOrderStatus(parseInt(req.params.id), workflow_state_id);
     res.status(200).json(order);

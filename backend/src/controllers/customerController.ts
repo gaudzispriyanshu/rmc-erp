@@ -30,11 +30,11 @@ export const getCustomerByIdController = async (req: Request, res: Response) => 
 
 export const createCustomerController = async (req: Request, res: Response) => {
   try {
-    if (!req.body.name) return res.status(400).json({ error: "Name is required." });
     const customer = await createCustomer(req.body);
     res.status(201).json(customer);
   } catch (err: any) {
     console.error("Create Customer Error:", err.message);
+    if (err.code === "23505") return res.status(409).json({ error: "A customer with this GST number already exists." });
     res.status(500).json({ error: "Failed to create customer." });
   }
 };
@@ -46,6 +46,7 @@ export const updateCustomerController = async (req: Request, res: Response) => {
     res.status(200).json(updated);
   } catch (err: any) {
     console.error("Update Customer Error:", err.message);
+    if (err.code === "23505") return res.status(409).json({ error: "A customer with this GST number already exists." });
     res.status(500).json({ error: "Failed to update customer." });
   }
 };

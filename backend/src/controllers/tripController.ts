@@ -8,14 +8,6 @@ export const createTripController = async (req: Request, res: Response) => {
         const { order_id, vehicle_id, driver_id, status, eta, started_at, completed_at, volume_delivered, fuel_cost_estimate } = req.body;
         // Default the assigner to the authenticated user when the client doesn't send one.
         const assigned_by = req.body.assigned_by ?? req.user?.userId;
-        const requiredFields = { order_id, vehicle_id, driver_id, assigned_by, eta };
-        const missingFields = Object.entries(requiredFields)
-            .filter(([key, value]) => value === undefined || value === null)
-            .map(([key]) => key);
-
-        if (missingFields.length > 0) {
-            return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
-        }
 
         const trip = await createTrip({
             order_id, vehicle_id, driver_id, assigned_by, status, eta, started_at, completed_at, volume_delivered, fuel_cost_estimate
@@ -52,9 +44,6 @@ export const getAllTripController = async (req: Request, res: Response) => {
 export const getTripByIdController = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        if (!id) {
-            return res.status(400).json({ error: "TripId is required" });
-        }
         const trip = await getTripById(parseInt(id));
         if (!trip) {
             return res.status(404).json({ error: "Trip not found" });
@@ -92,8 +81,6 @@ export const deleteTripController = async (req: Request, res: Response) => {
 export const changeTripStatusController = async (req: Request, res: Response) => {
     try {
         const { workflow_state_id, note, location } = req.body;
-        if (!workflow_state_id) return res.status(400).json({ error: "workflow_state_id is required." });
-
         const trip = await changeTripStatus(parseInt(req.params.id), workflow_state_id, { note, location });
         res.status(200).json(trip);
     } catch (err: any) {

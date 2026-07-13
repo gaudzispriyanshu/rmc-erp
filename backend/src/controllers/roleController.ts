@@ -21,9 +21,6 @@ export const getAllRolesController = async (req: Request, res: Response) => {
 export const createRoleController = async (req: Request, res: Response) => {
     try {
         const { name, description } = req.body;
-        if (!name) {
-            return res.status(400).json({ error: "Role name is required." });
-        }
         const role = await createRole(name, description);
         res.status(201).json(role);
     } catch (err: any) {
@@ -77,11 +74,6 @@ export const saveRolePermissionsController = async (req: Request, res: Response)
     try {
         const { id } = req.params;
         const { permissionIds } = req.body;
-
-        if (!Array.isArray(permissionIds)) {
-            return res.status(400).json({ error: "permissionIds must be an array." });
-        }
-
         const result = await saveRolePermissions(parseInt(id), permissionIds);
         res.status(200).json({ message: "Permissions updated.", ...result });
     } catch (err: any) {

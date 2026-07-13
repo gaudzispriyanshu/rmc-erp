@@ -4,6 +4,7 @@ export interface CustomerInput {
   name: string;
   email?: string;
   phone?: string;
+  gst_number?: string;
 }
 
 export const getAllCustomers = async (filters: { start?: number; end?: number; search?: string } = {}) => {
@@ -42,8 +43,8 @@ export const getCustomerById = async (id: number) => {
 
 export const createCustomer = async (data: CustomerInput) => {
   const result = await pool.query(
-    "INSERT INTO customers (name, email, phone) VALUES ($1, $2, $3) RETURNING *",
-    [data.name, data.email ?? null, data.phone ?? null]
+    "INSERT INTO customers (name, email, phone, gst_number) VALUES ($1, $2, $3, $4) RETURNING *",
+    [data.name, data.email ?? null, data.phone ?? null, data.gst_number ?? null]
   );
   return result.rows[0];
 };
@@ -52,7 +53,7 @@ export const updateCustomer = async (id: number, data: Partial<CustomerInput>) =
   const fields: string[] = [];
   const values: any[] = [];
   let idx = 1;
-  for (const key of ["name", "email", "phone"] as const) {
+  for (const key of ["name", "email", "phone", "gst_number"] as const) {
     if (data[key] !== undefined) {
       fields.push(`${key} = $${idx++}`);
       values.push(data[key]);

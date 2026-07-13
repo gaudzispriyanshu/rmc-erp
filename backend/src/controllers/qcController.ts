@@ -83,7 +83,6 @@ export const getNonConformancesController = async (req: Request, res: Response) 
 
 export const createNonConformanceController = async (req: Request, res: Response) => {
   try {
-    if (!req.body.description) return res.status(400).json({ error: "description is required." });
     const reported_by = req.user?.userId;
     res.status(201).json(await createNonConformance({ ...req.body, reported_by }));
   } catch (err: any) {

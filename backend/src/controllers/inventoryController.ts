@@ -50,7 +50,6 @@ export const getInventoryByIdController = async (req: Request, res: Response) =>
 
 export const createInventoryController = async (req: Request, res: Response) => {
   try {
-    if (!req.body.name) return res.status(400).json({ error: "Name is required." });
     res.status(201).json(await createInventoryItem(req.body));
   } catch (err: any) {
     console.error("Create Inventory Error:", err.message);
@@ -84,9 +83,6 @@ export const deleteInventoryController = async (req: Request, res: Response) => 
 export const recordStockMovementController = async (req: Request, res: Response) => {
   try {
     const { inventory_item_id, change_qty, reason, ref_type, ref_id } = req.body;
-    if (!inventory_item_id || change_qty === undefined) {
-      return res.status(400).json({ error: "inventory_item_id and change_qty are required." });
-    }
     res.status(201).json(await recordStockMovement({ inventory_item_id, change_qty, reason, ref_type, ref_id }));
   } catch (err: any) {
     console.error("Record Stock Movement Error:", err.message);

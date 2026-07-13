@@ -31,11 +31,11 @@ export const getDriverByIdController = async (req: Request, res: Response) => {
 
 export const createDriverController = async (req: Request, res: Response) => {
   try {
-    if (!req.body.name) return res.status(400).json({ error: "Name is required." });
     const driver = await createDriver(req.body);
     res.status(201).json(driver);
   } catch (err: any) {
     console.error("Create Driver Error:", err.message);
+    if (err.code === "23505") return res.status(409).json({ error: "A driver with this license number already exists." });
     res.status(500).json({ error: "Failed to create driver." });
   }
 };
@@ -47,6 +47,7 @@ export const updateDriverController = async (req: Request, res: Response) => {
     res.status(200).json(updated);
   } catch (err: any) {
     console.error("Update Driver Error:", err.message);
+    if (err.code === "23505") return res.status(409).json({ error: "A driver with this license number already exists." });
     res.status(500).json({ error: "Failed to update driver." });
   }
 };

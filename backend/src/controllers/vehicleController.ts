@@ -31,7 +31,6 @@ export const getVehicleByIdController = async (req: Request, res: Response) => {
 
 export const createVehicleController = async (req: Request, res: Response) => {
   try {
-    if (!req.body.plate_number) return res.status(400).json({ error: "Plate number is required." });
     const vehicle = await createVehicle(req.body);
     res.status(201).json(vehicle);
   } catch (err: any) {

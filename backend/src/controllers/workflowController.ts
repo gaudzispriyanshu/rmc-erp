@@ -32,8 +32,6 @@ export const getWorkflowController = async (req: Request, res: Response) => {
 
 export const createWorkflowController = async (req: Request, res: Response) => {
   try {
-    const { name, entity_type } = req.body;
-    if (!name || !entity_type) return res.status(400).json({ error: "name and entity_type are required." });
     res.status(201).json(await createWorkflow(req.body));
   } catch (err: any) {
     console.error("Create Workflow Error:", err.message);
@@ -67,8 +65,6 @@ export const deleteWorkflowController = async (req: Request, res: Response) => {
 
 export const createStateController = async (req: Request, res: Response) => {
   try {
-    const { name, slug } = req.body;
-    if (!name || !slug) return res.status(400).json({ error: "name and slug are required." });
     res.status(201).json(await createState(parseInt(req.params.id), req.body));
   } catch (err: any) {
     console.error("Create State Error:", err.message);
@@ -104,7 +100,6 @@ export const deleteStateController = async (req: Request, res: Response) => {
 export const saveTransitionsController = async (req: Request, res: Response) => {
   try {
     const { transitions } = req.body;
-    if (!Array.isArray(transitions)) return res.status(400).json({ error: "transitions must be an array." });
     res.status(200).json(await saveTransitions(parseInt(req.params.id), transitions));
   } catch (err: any) {
     console.error("Save Transitions Error:", err.message);
