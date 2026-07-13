@@ -4,13 +4,19 @@ import {
   updateVehicleController, deleteVehicleController,
 } from "../controllers/vehicleController";
 import { authenticate, authorize } from "../middleware/auth";
+import { validate } from "../middleware/validate";
+import { idempotency } from "../middleware/idempotency";
+import { idParamSchema } from "../schemas/common";
+import {
+  createVehicleSchema, updateVehicleSchema, listVehiclesQuerySchema,
+} from "../schemas/vehicleSchemas";
 
 const router = Router();
 
-router.get("/", authenticate, authorize("vehicles:read"), getAllVehiclesController);
-router.get("/:id", authenticate, authorize("vehicles:read"), getVehicleByIdController);
-router.post("/", authenticate, authorize("vehicles:write"), createVehicleController);
-router.put("/:id", authenticate, authorize("vehicles:update"), updateVehicleController);
-router.delete("/:id", authenticate, authorize("vehicles:delete"), deleteVehicleController);
+router.get("/", authenticate, authorize("vehicles:read"), validate({ query: listVehiclesQuerySchema }), getAllVehiclesController);
+router.get("/:id", authenticate, authorize("vehicles:read"), validate({ params: idParamSchema }), getVehicleByIdController);
+router.post("/", authenticate, authorize("vehicles:write"), validate({ body: createVehicleSchema }), idempotency, createVehicleController);
+router.put("/:id", authenticate, authorize("vehicles:update"), validate({ params: idParamSchema, body: updateVehicleSchema }), updateVehicleController);
+router.delete("/:id", authenticate, authorize("vehicles:delete"), validate({ params: idParamSchema }), deleteVehicleController);
 
 export default router;

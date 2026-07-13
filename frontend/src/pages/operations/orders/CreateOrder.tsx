@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
@@ -22,6 +22,10 @@ const CreateOrder = () => {
     });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    // One key per form session: a double-click (or network retry) re-sends the
+    // same key, so the backend replays the first response instead of creating
+    // a second order. The backend frees the key on failure, so retries work.
+    const idempotencyKey = useRef<string>(crypto.randomUUID());
 
     const loadRefs = useCallback(async () => {
         try {
@@ -73,7 +77,9 @@ const CreateOrder = () => {
         try {
             setSaving(true);
             if (isEdit) await axios.put(`${API_URL}/orders/${id}`, payload);
-            else await axios.post(`${API_URL}/orders`, payload);
+            else await axios.post(`${API_URL}/orders`, payload, {
+                headers: { 'Idempotency-Key': idempotencyKey.current },
+            });
             navigate('/orders');
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to save order.');

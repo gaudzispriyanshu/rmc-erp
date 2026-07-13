@@ -1,4 +1,5 @@
 import pool from "../config/db";
+import { AppError } from "../errors/AppError";
 
 export interface InventoryItemInput {
   name: string;
@@ -149,8 +150,8 @@ export const consumeStockForOrder = async (orderId: number) => {
       [orderId]
     );
     const order = orderRes.rows[0];
-    if (!order) throw new Error(`Order ${orderId} not found`);
-    if (!order.mix_design_id) throw new Error(`Order ${orderId} has no mix design`);
+    if (!order) throw new AppError(404, `Order ${orderId} not found`);
+    if (!order.mix_design_id) throw new AppError(400, `Order ${orderId} has no mix design`);
 
     const reqRes = await client.query(
       `SELECT mr.inventory_item_id, mr.quantity_per_m3, ii.name

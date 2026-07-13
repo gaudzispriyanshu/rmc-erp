@@ -8,6 +8,9 @@ import {
     saveRolePermissionsController,
 } from "../controllers/roleController";
 import { authenticate, authorize } from "../middleware/auth";
+import { validate } from "../middleware/validate";
+import { idParamSchema } from "../schemas/common";
+import { createRoleSchema, saveRolePermissionsSchema } from "../schemas/roleSchemas";
 
 const router = Router();
 
@@ -22,13 +25,12 @@ router.get("/matrix", authenticate, authorize("admin:read"), getRolePermissionMa
 router.get("/", authenticate, authorize("admin:read"), getAllRolesController);
 
 // Create a new role
-router.post("/", authenticate, authorize("admin:write"), createRoleController);
+router.post("/", authenticate, authorize("admin:write"), validate({ body: createRoleSchema }), createRoleController);
 
 // Delete a role
-router.delete("/:id", authenticate, authorize("admin:delete"), deleteRoleController);
+router.delete("/:id", authenticate, authorize("admin:delete"), validate({ params: idParamSchema }), deleteRoleController);
 
 // Save permissions for a specific role
-router.put("/:id/permissions", authenticate, authorize("admin:update"), saveRolePermissionsController);
+router.put("/:id/permissions", authenticate, authorize("admin:update"), validate({ params: idParamSchema, body: saveRolePermissionsSchema }), saveRolePermissionsController);
 
 export default router;
-

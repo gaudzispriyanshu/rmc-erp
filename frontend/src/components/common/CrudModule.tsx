@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import DataTable, { DTAction } from './DataTable';
@@ -55,6 +55,10 @@ const CrudModule = ({
 
     const [viewing, setViewing] = useState<any | null>(null);
 
+    // One idempotency key per create attempt (regenerated each time the create
+    // modal opens), so a double-click / retry can't create two records.
+    const idemKey = useRef<string>('');
+
     const totalPages = Math.ceil(total / pageSize) || 1;
 
     const fetchRows = useCallback(async () => {
@@ -80,7 +84,7 @@ const CrudModule = ({
 
     useEffect(() => { fetchRows(); }, [fetchRows]);
 
-    const openCreate = () => { setEditing(null); setForm({}); setError(''); setModalOpen(true); };
+    const openCreate = () => { setEditing(null); setForm({}); setError(''); idemKey.current = crypto.randomUUID(); setModalOpen(true); };
 
     const openEdit = (row: any) => {
         setEditing(row);
@@ -112,7 +116,9 @@ const CrudModule = ({
         try {
             setSaving(true);
             if (editing) await axios.put(`${API_URL}${apiPath}/${editing.id}`, payload);
-            else await axios.post(`${API_URL}${apiPath}`, payload);
+            else await axios.post(`${API_URL}${apiPath}`, payload, {
+                headers: { 'Idempotency-Key': idemKey.current },
+            });
             closeModal();
             fetchRows();
         } catch (err: any) {

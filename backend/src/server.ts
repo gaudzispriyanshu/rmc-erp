@@ -15,6 +15,7 @@ import workflowRoutes from './routes/workflows';
 import dispatchRoutes from './routes/dispatch';
 import qualityRoutes from './routes/quality';
 import { authenticate } from './middleware/auth';
+import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 app.use(cors());
@@ -51,6 +52,9 @@ app.get('/api/test', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Terminal error handler — must be mounted after all routes.
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

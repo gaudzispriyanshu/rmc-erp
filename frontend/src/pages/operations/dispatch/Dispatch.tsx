@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import '../../../components/common/CrudModule.css';
@@ -18,6 +18,9 @@ const Dispatch = () => {
     const { API_URL } = useAuth();
     const [board, setBoard] = useState<BoardTrip[]>([]);
     const [challans, setChallans] = useState<Challan[]>([]);
+    // One idempotency key per trip for this page session, so double-clicking
+    // "Generate Challan" on a trip can't produce two challans.
+    const challanKeys = useRef<Map<number, string>>(new Map());
 
     const fetchAll = useCallback(async () => {
         try {
@@ -36,9 +39,11 @@ const Dispatch = () => {
 
     const generateChallan = async (t: BoardTrip) => {
         try {
+            let key = challanKeys.current.get(t.id);
+            if (!key) { key = crypto.randomUUID(); challanKeys.current.set(t.id, key); }
             await axios.post(`${API_URL}/dispatch/challans`, {
                 trip_id: t.id, order_id: t.order_id, vehicle_id: t.vehicle_id, driver_id: t.driver_id,
-            });
+            }, { headers: { 'Idempotency-Key': key } });
             fetchAll();
         } catch (err: any) {
             alert(err.response?.data?.error || 'Failed to generate challan.');
