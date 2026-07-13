@@ -1,5 +1,6 @@
 import pool from "../config/db";
 import { isTransitionAllowed, getStateById } from "./workflowService";
+import { AppError } from "../errors/AppError";
 // Import the generated types (assuming you ran the gen types command)
 // import { Database } from "../types/supabase";
 
@@ -42,14 +43,14 @@ export const createOrder = async (data: CreateOrderInput) => {
  */
 export const changeOrderStatus = async (orderId: number, toStateId: number) => {
   const current = await pool.query("SELECT workflow_state_id FROM orders WHERE id = $1", [orderId]);
-  if (current.rows.length === 0) throw new Error("NOT_FOUND");
+  if (current.rows.length === 0) throw new AppError(404, "Order not found");
 
   const fromStateId: number | null = current.rows[0].workflow_state_id;
   const allowed = await isTransitionAllowed(fromStateId, toStateId);
-  if (!allowed) throw new Error("ILLEGAL_TRANSITION");
+  if (!allowed) throw new AppError(400, "That status change is not allowed by the workflow.");
 
   const toState = await getStateById(toStateId);
-  if (!toState) throw new Error("ILLEGAL_TRANSITION");
+  if (!toState) throw new AppError(400, "That status change is not allowed by the workflow.");
 
   const result = await pool.query(
     "UPDATE orders SET workflow_state_id = $1, status = $2 WHERE id = $3 RETURNING *",

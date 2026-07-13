@@ -11,16 +11,16 @@ const mockPool = pool as unknown as { query: jest.Mock; connect: jest.Mock };
 beforeEach(() => mockPool.query.mockReset());
 
 describe("changeOrderStatus", () => {
-  it("throws NOT_FOUND when the order does not exist", async () => {
+  it("throws a 404 AppError when the order does not exist", async () => {
     mockPool.query.mockResolvedValueOnce({ rows: [] }); // SELECT current state
-    await expect(changeOrderStatus(999, 2)).rejects.toThrow("NOT_FOUND");
+    await expect(changeOrderStatus(999, 2)).rejects.toThrow("Order not found");
   });
 
-  it("throws ILLEGAL_TRANSITION when the move is not defined", async () => {
+  it("throws a 400 AppError when the move is not defined", async () => {
     mockPool.query
       .mockResolvedValueOnce({ rows: [{ workflow_state_id: 1 }] }) // current state
       .mockResolvedValueOnce({ rows: [] }); // isTransitionAllowed -> none
-    await expect(changeOrderStatus(1, 9)).rejects.toThrow("ILLEGAL_TRANSITION");
+    await expect(changeOrderStatus(1, 9)).rejects.toThrow("not allowed by the workflow");
   });
 
   it("updates the order when the transition is allowed", async () => {

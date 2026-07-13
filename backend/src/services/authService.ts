@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db";
+import { AppError } from "../errors/AppError";
 
 export interface JwtPayload {
   userId: number;
@@ -17,7 +18,7 @@ export const registerUser = async (
   role_id: number
 ) => {
   if (!role_id) {
-    throw new Error("role_id is required");
+    throw new AppError(400, "role_id is required");
   }
 
   const userExists = await pool.query(
@@ -26,7 +27,7 @@ export const registerUser = async (
   );
 
   if (userExists.rows.length > 0) {
-    throw new Error("User already exists");
+    throw new AppError(409, "User already exists");
   }
 
   // Validate that the role_id exists in the roles table
@@ -36,7 +37,7 @@ export const registerUser = async (
   );
 
   if (roleResult.rows.length === 0) {
-    throw new Error(`Role with id '${role_id}' not found.`);
+    throw new AppError(400, `Role with id '${role_id}' not found.`);
   }
 
   const roleName = roleResult.rows[0].name;
@@ -74,18 +75,18 @@ export const loginUser = async (email: string, password: string) => {
   );
 
   if (result.rows.length === 0) {
-    throw new Error("Invalid credentials");
+    throw new AppError(401, "Invalid credentials");
   }
 
   const user = result.rows[0];
 
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) {
-    throw new Error("Invalid credentials");
+    throw new AppError(401, "Invalid credentials");
   }
 
   if (!user.role_id) {
-    throw new Error("User has no role assigned.");
+    throw new AppError(403, "User has no role assigned.");
   }
 
   const token = jwt.sign(
@@ -116,7 +117,9 @@ export const verifyUser = async (userId: number) => {
   );
 
   if (result.rows.length === 0) {
-    throw new Error("User not found");
+    // 401 (not 404) so the frontend's verify-on-load treats a vanished user
+    // the same as an invalid token and logs out cleanly.
+    throw new AppError(401, "User not found");
   }
 
   const user = result.rows[0];

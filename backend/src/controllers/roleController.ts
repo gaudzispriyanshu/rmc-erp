@@ -7,77 +7,40 @@ import {
     getRolePermissionMatrix,
     saveRolePermissions,
 } from "../services/roleService";
+import { AppError } from "../errors/AppError";
 
-export const getAllRolesController = async (req: Request, res: Response) => {
-    try {
-        const roles = await getAllRoles();
-        res.status(200).json(roles);
-    } catch (err: any) {
-        console.error("Get Roles Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch roles." });
-    }
+export const getAllRolesController = async (_req: Request, res: Response) => {
+    res.status(200).json(await getAllRoles());
 };
 
+// A duplicate role name surfaces as a unique violation -> 409 via errorHandler.
 export const createRoleController = async (req: Request, res: Response) => {
-    try {
-        const { name, description } = req.body;
-        const role = await createRole(name, description);
-        res.status(201).json(role);
-    } catch (err: any) {
-        console.error("Create Role Error:", err.message);
-        if (err.message.includes("duplicate") || err.code === "23505") {
-            return res.status(409).json({ error: "Role with this name already exists." });
-        }
-        res.status(500).json({ error: "Failed to create role." });
-    }
+    const { name, description } = req.body;
+    const role = await createRole(name, description);
+    res.status(201).json(role);
 };
 
 export const deleteRoleController = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const deleted = await deleteRole(parseInt(id));
-        if (!deleted) {
-            return res.status(404).json({ error: "Role not found." });
-        }
-        res.status(200).json({ message: "Role deleted.", role: deleted });
-    } catch (err: any) {
-        console.error("Delete Role Error:", err.message);
-        res.status(500).json({ error: "Failed to delete role." });
-    }
+    const deleted = await deleteRole(parseInt(req.params.id));
+    if (!deleted) throw new AppError(404, "Role not found.");
+    res.status(200).json({ message: "Role deleted.", role: deleted });
 };
 
-export const getAllPermissionsController = async (req: Request, res: Response) => {
-    try {
-        const permissions = await getAllPermissions();
-        res.status(200).json(permissions);
-    } catch (err: any) {
-        console.error("Get Permissions Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch permissions." });
-    }
+export const getAllPermissionsController = async (_req: Request, res: Response) => {
+    res.status(200).json(await getAllPermissions());
 };
 
-export const getRolePermissionMatrixController = async (req: Request, res: Response) => {
-    try {
-        const [roles, permissions, matrix] = await Promise.all([
-            getAllRoles(),
-            getAllPermissions(),
-            getRolePermissionMatrix(),
-        ]);
-        res.status(200).json({ roles, permissions, matrix });
-    } catch (err: any) {
-        console.error("Get Matrix Error:", err.message);
-        res.status(500).json({ error: "Failed to fetch role-permission matrix." });
-    }
+export const getRolePermissionMatrixController = async (_req: Request, res: Response) => {
+    const [roles, permissions, matrix] = await Promise.all([
+        getAllRoles(),
+        getAllPermissions(),
+        getRolePermissionMatrix(),
+    ]);
+    res.status(200).json({ roles, permissions, matrix });
 };
 
 export const saveRolePermissionsController = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const { permissionIds } = req.body;
-        const result = await saveRolePermissions(parseInt(id), permissionIds);
-        res.status(200).json({ message: "Permissions updated.", ...result });
-    } catch (err: any) {
-        console.error("Save Permissions Error:", err.message);
-        res.status(500).json({ error: "Failed to save permissions." });
-    }
+    const { permissionIds } = req.body;
+    const result = await saveRolePermissions(parseInt(req.params.id), permissionIds);
+    res.status(200).json({ message: "Permissions updated.", ...result });
 };

@@ -1,5 +1,6 @@
 import pool from "../config/db";
 import { isTransitionAllowed, getStateById } from "./workflowService";
+import { AppError } from "../errors/AppError";
 
 interface CreateTripInput {
     order_id: number;
@@ -69,14 +70,14 @@ export const changeTripStatus = async (
     extra: { note?: string; location?: any } = {}
 ) => {
     const current = await pool.query("SELECT workflow_state_id FROM trips WHERE id = $1", [tripId]);
-    if (current.rows.length === 0) throw new Error("NOT_FOUND");
+    if (current.rows.length === 0) throw new AppError(404, "Trip not found");
 
     const fromStateId: number | null = current.rows[0].workflow_state_id;
     const allowed = await isTransitionAllowed(fromStateId, toStateId);
-    if (!allowed) throw new Error("ILLEGAL_TRANSITION");
+    if (!allowed) throw new AppError(400, "That status change is not allowed by the workflow.");
 
     const toState = await getStateById(toStateId);
-    if (!toState) throw new Error("ILLEGAL_TRANSITION");
+    if (!toState) throw new AppError(400, "That status change is not allowed by the workflow.");
 
     const client = await pool.connect();
     try {
