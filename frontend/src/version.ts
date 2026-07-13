@@ -3,7 +3,7 @@
 // footer) updates automatically.
 
 export const APP_NAME = 'RMC ERP';
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.1.0';
 export const COMPANY = 'SMS Engineering';
 export const COPYRIGHT_YEAR = 2026;
 export const COPYRIGHT = `© ${COPYRIGHT_YEAR} ${COMPANY}. All rights reserved.`;
