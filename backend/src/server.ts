@@ -16,10 +16,14 @@ import dispatchRoutes from './routes/dispatch';
 import qualityRoutes from './routes/quality';
 import { authenticate } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
+import { requestLogger } from './middleware/requestLogger';
+import { logger } from './utils/logger';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
+
 
 app.use('/api/orders', orderRoutes);
 app.use('/api/auth', authRoutes);
@@ -35,10 +39,7 @@ app.use('/api/dispatch', dispatchRoutes);
 app.use('/api/quality', qualityRoutes);
 
 // Protected route example
-// We extend Request type for `user` in a declaration file (see instructions below).
 app.get('/api/protected', authenticate, (req: Request, res: Response) => {
-  // req.user will be available if middleware sets it
-  // use (req as any).user if you haven't added the declaration merging file yet
   res.json({ message: 'This is protected data!', user: (req as any).user });
 });
 
@@ -48,7 +49,7 @@ app.get('/api/test', async (req: Request, res: Response) => {
     const result = await pool.query('SELECT NOW()');
     res.json({ message: 'API is working!', time: result.rows[0] });
   } catch (err: any) {
-    console.error(err.message);
+    logger.error('Error in /api/test endpoint', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -58,7 +59,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });
 
 export default app;
