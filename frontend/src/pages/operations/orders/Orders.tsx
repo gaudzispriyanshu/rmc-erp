@@ -30,7 +30,8 @@ interface Order {
     status: string;
     workflow_state_id?: number | null;
     delivery_date?: string;
-    created_at: string;
+    order_date?: string;
+    created_at?: string;
 }
 
 interface MixDesign { id: number; grade_name: string; }
@@ -145,7 +146,7 @@ const Orders = () => {
         },
         { key: 'concrete_grade', label: 'Mix Type', render: (o: Order) => <span className="mix-badge">{o.concrete_grade || (o.mix_design_id ? `Mix #${o.mix_design_id}` : '—')}</span> },
         { key: 'quantity', label: 'Qty (m³)' },
-        { key: 'delivery_date', label: 'Delivery Date', render: (o: Order) => formatDate(o.delivery_date || o.created_at) },
+        { key: 'delivery_date', label: 'Delivery Date', render: (o: Order) => formatDate(o.delivery_date || o.order_date || o.created_at) },
         {
             key: 'status', label: 'Status', render: (o: Order) =>
                 states.length > 0
@@ -219,7 +220,7 @@ const Orders = () => {
                             <div className="crud-view-row"><span>Customer</span><div>{viewing.customer_name || `#${viewing.customer_id}`}</div></div>
                             <div className="crud-view-row"><span>Mix Type</span><div>{viewing.concrete_grade || `Mix #${viewing.mix_design_id}`}</div></div>
                             <div className="crud-view-row"><span>Quantity</span><div>{viewing.quantity} m³</div></div>
-                            <div className="crud-view-row"><span>Delivery Date</span><div>{formatDate(viewing.delivery_date || viewing.created_at)}</div></div>
+                            <div className="crud-view-row"><span>Delivery Date</span><div>{formatDate(viewing.delivery_date || viewing.order_date || viewing.created_at)}</div></div>
                             <div className="crud-view-row"><span>Address</span><div>{viewing.delivery_address || '—'}</div></div>
                             <div className="crud-view-row"><span>Status</span><div>{statusLabel(viewing.status)}</div></div>
                         </div>

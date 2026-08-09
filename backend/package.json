@@ -6,8 +6,12 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
     "build": "tsc",
+    "prestart": "npm run build",
     "start": "node dist/server.js",
-    "test": "jest"
+    "test": "jest",
+    "db:migrate": "for f in $(ls ../database/migrations/*.sql | sort); do psql -d rmc_erp -f \"$f\"; done",
+    "db:seed": "for f in $(ls ../database/seeding/*.sql | sort); do psql -d rmc_erp -f \"$f\"; done",
+    "db:reset": "dropdb rmc_erp && createdb rmc_erp && npm run db:migrate && npm run db:seed"
   },
   "keywords": [],
   "author": "",

@@ -1,5 +1,4 @@
 {
-  "devDependencies": {
-    "supabase": "^2.67.3"
-  }
+  "name": "rmc-erp",
+  "private": true
 }
