@@ -35,4 +35,13 @@ if (fs.existsSync(readmeFile)) {
   console.log(`Updated README.md -> v${newVersion}`);
 }
 
+// Update frontend/src/version.ts
+const versionTsFile = path.join(rootDir, 'frontend', 'src', 'version.ts');
+if (fs.existsSync(versionTsFile)) {
+  let versionTs = fs.readFileSync(versionTsFile, 'utf8');
+  versionTs = versionTs.replace(/export const APP_VERSION = '[^']+';/g, `export const APP_VERSION = '${newVersion}';`);
+  fs.writeFileSync(versionTsFile, versionTs, 'utf8');
+  console.log(`Updated frontend/src/version.ts -> v${newVersion}`);
+}
+
 console.log(`\nSuccessfully bumped project version to ${newVersion}!`);

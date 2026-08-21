@@ -45,13 +45,15 @@ This single command automatically updates:
 1. `package.json` (Root)
 2. `backend/package.json`
 3. `frontend/package.json`
-4. `README.md` (Version badge)
+4. `frontend/src/version.ts` (APP_VERSION constant)
+5. `README.md` (Version badge)
 
 ### Step 2: Manual Version Files Check
 If you ever need to manually inspect or update version numbers, verify the following files:
 - `package.json` -> `"version": "1.2.0"`
 - `backend/package.json` -> `"version": "1.2.0"`
 - `frontend/package.json` -> `"version": "1.2.0"`
+- `frontend/src/version.ts` -> `export const APP_VERSION = '1.2.0';`
 - `README.md` -> `> **Version 1.2.0**`
 
 ### Step 3: Maintain `CHANGELOG.md` at Project Root
