@@ -14,6 +14,7 @@ import mixDesignRoutes from './routes/mixDesigns';
 import workflowRoutes from './routes/workflows';
 import dispatchRoutes from './routes/dispatch';
 import qualityRoutes from './routes/quality';
+import lookupRoutes from './routes/lookups';
 import { authenticate } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
@@ -37,6 +38,7 @@ app.use('/api/mix-designs', mixDesignRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/dispatch', dispatchRoutes);
 app.use('/api/quality', qualityRoutes);
+app.use('/api/lookups', lookupRoutes);
 
 // Protected route example
 app.get('/api/protected', authenticate, (req: Request, res: Response) => {
