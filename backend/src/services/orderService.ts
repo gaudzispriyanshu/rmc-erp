@@ -120,7 +120,7 @@ export const getAllOrders = async (filters: {
     LEFT JOIN customers ON orders.customer_id = customers.id
     LEFT JOIN mix_designs ON orders.mix_design_id = mix_designs.id
     ${whereClause}
-    ORDER BY orders.created_at DESC
+    ORDER BY orders.order_date DESC
     LIMIT $${idx++} OFFSET $${idx++}
   `;
   params.push(limit, offset);
@@ -154,7 +154,7 @@ export const getRecentOrders = async (limit: number = 5) => {
     FROM orders
     LEFT JOIN customers ON orders.customer_id = customers.id
     LEFT JOIN mix_designs ON orders.mix_design_id = mix_designs.id
-    ORDER BY orders.created_at DESC
+    ORDER BY orders.order_date DESC
     LIMIT $1
     `,
     [limit]
@@ -168,7 +168,7 @@ export const getOrderStats = async () => {
     SELECT
       COUNT(*) AS total,
       COUNT(*) FILTER (WHERE status = 'pending') AS pending,
-      COUNT(*) FILTER (WHERE status = 'completed' AND created_at::date = CURRENT_DATE) AS completed_today
+      COUNT(*) FILTER (WHERE status = 'completed' AND order_date::date = CURRENT_DATE) AS completed_today
     FROM orders
   `);
 

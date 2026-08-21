@@ -27,8 +27,11 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-// 2. New Dynamic Permission Guard
-export const authorize = (requiredPermission: string) => {
+// 2. Dynamic Permission Guard
+// Accepts a single slug string OR an array of slugs (OR logic — user needs ANY one to pass)
+export const authorize = (requiredPermissions: string | string[]) => {
+  const slugs = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
@@ -36,15 +39,13 @@ export const authorize = (requiredPermission: string) => {
       }
       const { roleId } = req.user;
 
-      // Query the junction table we created in the migration
+      // Uses ANY($2) so a single slug or an array of slugs both work via OR logic
       const result = await pool.query(
-        `
-        SELECT p.action_slug 
-        FROM permissions p
-        JOIN role_permissions rp ON p.id = rp.permission_id
-        WHERE rp.role_id = $1 AND p.action_slug = $2
-        `,
-        [roleId, requiredPermission]
+        `SELECT p.action_slug 
+         FROM permissions p
+         JOIN role_permissions rp ON p.id = rp.permission_id
+         WHERE rp.role_id = $1 AND p.action_slug = ANY($2)`,
+        [roleId, slugs]
       );
 
       if (result.rows.length === 0) {

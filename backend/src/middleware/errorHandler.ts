@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
+import { logger } from "../utils/logger";
 
 // Friendly messages for the unique constraints we know by name; any other
 // unique violation falls back to a generic (still non-leaking) message.
@@ -43,6 +44,6 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
 
   // 3. Anything else is a genuine server fault — log the detail, tell the
   //    client nothing beyond a generic message.
-  console.error(`[${req.method} ${req.originalUrl}]`, err?.message ?? err);
+  logger.error(`[${req.method} ${req.originalUrl}]`, err);
   res.status(500).json({ error: "Internal server error." });
 };
